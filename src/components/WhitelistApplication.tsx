@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "../lib/supabaseClient";
+import { supabase } from "../lib/supabase";
 import { colors, display, mono, sans } from "../lib/theme";
 import { X_URL, PINNED_TWEET_URL, isValidEvm, isValidUrl } from "../lib/content";
 
