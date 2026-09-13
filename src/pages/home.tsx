@@ -21,13 +21,7 @@ export default function Home() {
         @keyframes fadeUp { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
         @keyframes pulseGlow { 0%{box-shadow:0 0 0 0 ${colors.orange}44, 0 10px 36px ${colors.orange}36} 50%{box-shadow:0 0 20px 4px ${colors.orange}33, 0 10px 36px ${colors.orange}36} 100%{box-shadow:0 0 0 0 ${colors.orange}44, 0 10px 36px ${colors.orange}36} }
         @keyframes shimmer { 0%{background-position:-200% center} 100%{background-position:200% center} }
-        .hero-grid { display:grid; grid-template-columns:1.15fr 1fr; gap:56px; align-items:center; text-align:left; }
-        .hero-visual { order:2; }
-        @media (max-width: 860px) {
-          .hero-grid { grid-template-columns:1fr; text-align:center; }
-          .hero-visual { order:-1; max-width:320px; margin:0 auto; }
-          .hero-stats { justify-content:center; }
-        }
+        @keyframes tagSway { 0%,100%{transform:rotate(-1.4deg)} 50%{transform:rotate(1deg)} }
         *{box-sizing:border-box;}
         ::placeholder{color:rgba(255,255,255,0.2);}
         ::-webkit-scrollbar{width:3px;}
@@ -52,98 +46,97 @@ export default function Home() {
       </header>
 
       {/* ══════════ HERO ══════════ */}
-      <div id="home" style={{ minHeight:"100vh", display:"flex", alignItems:"center", padding:"110px 24px 80px", position:"relative", overflow:"hidden" }}>
+      <div id="home" style={{
+        minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center",
+        padding:"110px 24px 80px", position:"relative", overflow:"hidden",
+      }}>
         <Particles />
-        <div className="hero-grid" style={{ maxWidth:"1080px", margin:"0 auto", width:"100%", position:"relative", zIndex:1 }}>
 
-          {/* ── Copy column ── */}
-          <div>
-            <div style={{ animation: ready?"fadeUp 0.7s ease 0.05s both":"none", opacity: ready?undefined:0, marginBottom:"20px" }}>
-              <span style={{ fontFamily:mono, fontSize:"0.6rem", letterSpacing:"0.2em", textTransform:"uppercase", color:colors.orange, border:`1px solid ${colors.orange}44`, borderRadius:"3px", padding:"5px 14px", display:"inline-block" }}>
-                4,444 ON ROBINHOOD
-              </span>
-            </div>
+        {/* tactical grid backdrop */}
+        <div style={{
+          position:"absolute", inset:0, pointerEvents:"none", opacity:0.5,
+          backgroundImage:
+            `linear-gradient(${colors.border} 1px, transparent 1px),` +
+            `linear-gradient(90deg, ${colors.border} 1px, transparent 1px)`,
+          backgroundSize:"42px 42px",
+          maskImage:"radial-gradient(circle at 50% 40%, black 0%, transparent 72%)",
+          WebkitMaskImage:"radial-gradient(circle at 50% 40%, black 0%, transparent 72%)",
+        }} />
+
+        {/* ── Dog tag console ── */}
+        <div style={{
+          position:"relative", zIndex:1, width:"100%", maxWidth:"420px",
+          animation: ready ? "fadeUp 0.7s ease 0.05s both, tagSway 7s ease-in-out 1s infinite" : "none",
+          opacity: ready ? undefined : 0,
+        }}>
+          {/* chain loop */}
+          <svg width="46" height="26" viewBox="0 0 46 26" style={{ display:"block", margin:"0 auto -1px" }}>
+            <path d="M4 26C4 12 14 3 23 3s19 9 19 23" fill="none" stroke={`${colors.khaki}88`} strokeWidth="2.5" />
+          </svg>
+
+          <div style={{
+            position:"relative", background:colors.panel, border:`1px solid ${colors.border}`,
+            borderRadius:"14px", padding:"38px 30px 30px", textAlign:"center",
+            boxShadow:`0 30px 60px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.04)`,
+          }}>
+            {/* punch hole */}
+            <div style={{
+              position:"absolute", top:"14px", left:"50%", transform:"translateX(-50%)",
+              width:"10px", height:"10px", borderRadius:"50%",
+              background:colors.bg, border:`1px solid ${colors.border}`,
+            }} />
+
+            <span style={{
+              fontFamily:mono, fontSize:"0.58rem", letterSpacing:"0.2em", textTransform:"uppercase",
+              color:colors.orange, border:`1px solid ${colors.orange}44`, borderRadius:"3px",
+              padding:"5px 14px", display:"inline-block", marginBottom:"18px", marginTop:"6px",
+            }}>
+              4,444 ON ROBINHOOD
+            </span>
 
             <h1 style={{
-              fontFamily:display, fontSize:"clamp(1.6rem,6vw,2.9rem)",
-              color:"#fff", margin:"0 0 18px", letterSpacing:"0.01em", lineHeight:1.35,
-              animation: ready?"fadeUp 0.7s ease 0.12s both":"none", opacity: ready?undefined:0,
+              fontFamily:display, fontSize:"clamp(1.5rem,7vw,2.4rem)", color:"#fff",
+              margin:"0 0 14px", letterSpacing:"0.01em", lineHeight:1.4,
             }}>
               SWOLDIERS
             </h1>
 
+            <div style={{ width:"52px", height:"1px", background:`${colors.orange}66`, margin:"0 auto 16px" }} />
+
             <p style={{
-              fontFamily:mono, fontSize:"clamp(0.82rem,2vw,0.94rem)", color:"rgba(255,255,255,0.5)",
-              margin:"0 0 32px", maxWidth:"420px", lineHeight:1.8, letterSpacing:"0.01em",
-              animation: ready?"fadeUp 0.7s ease 0.2s both":"none", opacity: ready?undefined:0,
+              fontFamily:mono, fontSize:"0.8rem", color:"rgba(255,255,255,0.5)",
+              margin:"0 0 26px", lineHeight:1.8, letterSpacing:"0.01em",
             }}>
               Play. Climb the ranks. Earn your place.<br/>
               4,444 pixel-art Swoldiers battling for allowlist spots on Robinhood.
             </p>
 
-            <div style={{ maxWidth:"320px", animation: ready?"fadeUp 0.7s ease 0.28s both":"none", opacity: ready?undefined:0 }}>
-              <button onClick={()=>setModalOpen(true)} style={{
-                fontFamily:mono, fontSize:"0.72rem", fontWeight:700, letterSpacing:"0.16em", textTransform:"uppercase",
-                color:"#050504", background:colors.orange, border:"none", borderRadius:"4px",
-                padding:"17px 36px", cursor:"pointer", transition:"all 0.2s ease",
-                boxShadow:`0 10px 36px ${colors.orange}36`, animation:"pulseGlow 2.5s ease-in-out infinite",
-                position:"relative", overflow:"hidden", display:"block", textAlign:"center", width:"100%",
-              }}
-                onMouseEnter={e=>{(e.currentTarget as HTMLButtonElement).style.background=colors.orangeLight;(e.currentTarget as HTMLButtonElement).style.transform="translateY(-2px)";}}
-                onMouseLeave={e=>{(e.currentTarget as HTMLButtonElement).style.background=colors.orange;(e.currentTarget as HTMLButtonElement).style.transform="";}}
-              >
-                <span style={{ position:"relative", zIndex:2 }}>CLAIM GUARANTEED SPOT</span>
-                <span style={{ position:"absolute", inset:0, background:`linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.25) 50%, transparent 100%)`, backgroundSize:"200% 100%", animation:"shimmer 3s ease-in-out infinite", zIndex:1 }} />
-              </button>
-            </div>
+            <button onClick={()=>setModalOpen(true)} style={{
+              fontFamily:mono, fontSize:"0.7rem", fontWeight:700, letterSpacing:"0.14em", textTransform:"uppercase",
+              color:"#050504", background:colors.orange, border:"none", borderRadius:"4px",
+              padding:"16px 28px", cursor:"pointer", transition:"all 0.2s ease", width:"100%",
+              boxShadow:`0 10px 36px ${colors.orange}36`, animation:"pulseGlow 2.5s ease-in-out infinite",
+              position:"relative", overflow:"hidden",
+            }}
+              onMouseEnter={e=>{(e.currentTarget as HTMLButtonElement).style.background=colors.orangeLight;}}
+              onMouseLeave={e=>{(e.currentTarget as HTMLButtonElement).style.background=colors.orange;}}
+            >
+              <span style={{ position:"relative", zIndex:2 }}>CLAIM GUARANTEED SPOT</span>
+              <span style={{ position:"absolute", inset:0, background:`linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.25) 50%, transparent 100%)`, backgroundSize:"200% 100%", animation:"shimmer 3s ease-in-out infinite", zIndex:1 }} />
+            </button>
 
-            <div className="hero-stats" style={{
-              marginTop:"40px", display:"flex", gap:"28px",
-              animation: ready?"fadeUp 0.7s ease 0.36s both":"none", opacity: ready?undefined:0,
+            <div style={{
+              marginTop:"26px", paddingTop:"20px", borderTop:`1px dashed ${colors.border}`,
+              display:"flex", justifyContent:"center", gap:"24px",
             }}>
               {[["4,444","Supply"],["TBA","Mint Price"],["Robinhood","Chain"]].map(([val,lbl],i)=>(
-                <div key={i} style={{ paddingLeft: i>0?"28px":"0", borderLeft: i>0?`1px solid ${colors.border}`:"none" }}>
-                  <p style={{ margin:0, fontFamily:display, fontSize:"0.9rem", color:"#fff", letterSpacing:"0.01em" }}>{val}</p>
-                  <p style={{ margin:"5px 0 0", fontFamily:mono, fontSize:"0.5rem", letterSpacing:"0.12em", textTransform:"uppercase", color:"rgba(255,255,255,0.28)" }}>{lbl}</p>
+                <div key={i} style={{ paddingLeft: i>0?"24px":"0", borderLeft: i>0?`1px solid ${colors.border}`:"none" }}>
+                  <p style={{ margin:0, fontFamily:display, fontSize:"0.8rem", color:"#fff", letterSpacing:"0.01em" }}>{val}</p>
+                  <p style={{ margin:"5px 0 0", fontFamily:mono, fontSize:"0.48rem", letterSpacing:"0.1em", textTransform:"uppercase", color:"rgba(255,255,255,0.28)" }}>{lbl}</p>
                 </div>
               ))}
             </div>
           </div>
-
-          {/* ── Visual column — framed field footage ── */}
-          <div className="hero-visual" style={{
-            position:"relative", width:"100%", aspectRatio:"1/1",
-            animation: ready?"fadeUp 0.7s ease 0.2s both":"none", opacity: ready?undefined:0,
-          }}>
-            <div style={{ position:"absolute", inset:"-18px", borderRadius:"10px", background:`radial-gradient(circle,${colors.orange}12 0%,transparent 70%)`, pointerEvents:"none" }} />
-            <div style={{
-              position:"relative", width:"100%", height:"100%", borderRadius:"6px", overflow:"hidden",
-              border:`1px solid ${colors.border}`, background:colors.panel,
-              boxShadow:`0 30px 60px rgba(0,0,0,0.5)`,
-            }}>
-              <video src={GALLERY[0]} autoPlay muted loop playsInline style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
-              <div style={{
-                position:"absolute", inset:0, pointerEvents:"none", mixBlendMode:"overlay",
-                background:"repeating-linear-gradient(0deg, rgba(0,0,0,0.35) 0px, rgba(0,0,0,0.35) 1px, transparent 1px, transparent 3px)",
-              }} />
-              <div style={{
-                position:"absolute", top:"10px", left:"12px", display:"flex", alignItems:"center", gap:"6px",
-                fontFamily:mono, fontSize:"0.6rem", letterSpacing:"0.08em", color:colors.orange,
-                textShadow:"0 1px 3px rgba(0,0,0,0.9)",
-              }}>
-                <span style={{ width:"6px", height:"6px", borderRadius:"50%", background:colors.orange, boxShadow:`0 0 6px ${colors.orange}` }} />
-                FIELD FOOTAGE
-              </div>
-              {/* corner ticks */}
-              {[["8px","8px",undefined,undefined],[undefined,"8px","8px",undefined],["8px",undefined,undefined,"8px"],[undefined,undefined,"8px","8px"]].map(([t,r,b,l],i)=>(
-                <div key={i} style={{ position:"absolute", top:t, right:r, bottom:b, left:l, width:"14px", height:"14px",
-                  borderTop: t?`2px solid ${colors.khaki}88`:undefined, borderBottom: b?`2px solid ${colors.khaki}88`:undefined,
-                  borderLeft: l?`2px solid ${colors.khaki}88`:undefined, borderRight: r?`2px solid ${colors.khaki}88`:undefined,
-                }} />
-              ))}
-            </div>
-          </div>
-
         </div>
 
         <div style={{ position:"absolute", bottom:"36px", left:"50%", transform:"translateX(-50%)", display:"flex", flexDirection:"column", alignItems:"center", gap:"8px", opacity:0.35 }}>
@@ -151,6 +144,7 @@ export default function Home() {
           <div style={{ width:"1px", height:"28px", background:`linear-gradient(180deg,${colors.orange},transparent)` }} />
         </div>
       </div>
+
 
       <Divider />
 
