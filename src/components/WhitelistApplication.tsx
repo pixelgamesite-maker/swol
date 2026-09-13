@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import { colors, display, mono, sans } from "../lib/theme";
-import { X_URL, PINNED_TWEET_URL, isValidEvm, isValidXUrl } from "../lib/content";
+import {
+  X_URL, PINNED_TWEET_URL, isValidEvm, isValidXUrl,
+  extractXHandle, followIntentUrl, quoteIntentUrl, replyIntentUrl,
+} from "../lib/content";
 
 /* ── localStorage keys (namespaced so this component can be dropped anywhere) ── */
 const DRAFT_KEY = "swol_wl_draft";
@@ -15,11 +18,22 @@ const inp: React.CSSProperties = {
 };
 
 const STEPS = [
-  { key: "handle", label: "Identify" },
-  { key: "follow", label: "Follow" },
-  { key: "quote",  label: "Quote" },
-  { key: "wallet", label: "Wallet" },
+  { key: "handle",  label: "Identify" },
+  { key: "follow",  label: "Follow" },
+  { key: "quote",   label: "Quote" },
+  { key: "comment", label: "Comment" },
+  { key: "wallet",  label: "Wallet" },
 ] as const;
+
+/** Opens an x.com/twitter.com intent link in a small centered popup, the way
+ *  "like"/"follow" buttons behave on other sites, rather than a full new tab. */
+function openIntentPopup(url: string) {
+  const width = 550, height = 600;
+  const left = window.screenX + (window.outerWidth - width) / 2;
+  const top = window.screenY + (window.outerHeight - height) / 2;
+  const popup = window.open(url, "x-intent", `width=${width},height=${height},left=${left},top=${top}`);
+  if (popup) popup.opener = null;
+}
 
 export interface WhitelistApplicationProps {
   open: boolean;
@@ -40,11 +54,18 @@ export default function WhitelistApplication({ open, onClose, communityName }: W
   const [wallet,    setWallet]    = useState("");
   const [quoteUrl,  setQuoteUrl]  = useState("");
   const [followed,  setFollowed]  = useState(false);
+  const [commented, setCommented] = useState(false);
   const [sending,   setSending]   = useState(false);
   const [success,   setSuccess]   = useState(false);
   const [err,       setErr]       = useState("");
   const [ready,     setReady]     = useState(false);
   const [alreadySubmitted, setAlreadySubmitted] = useState(false);
+
+  // Track that the person actually opened the relevant X popup before letting
+  // them self-confirm — fixes being able to skip straight to "I've done this".
+  const [openedFollow,  setOpenedFollow]  = useState(false);
+  const [openedQuote,   setOpenedQuote]   = useState(false);
+  const [openedComment, setOpenedComment] = useState(false);
 
   /* ── Load draft from localStorage on mount ── */
   useEffect(() => {
@@ -56,6 +77,7 @@ export default function WhitelistApplication({ open, onClose, communityName }: W
         setWallet(p.wallet ?? "");
         setQuoteUrl(p.quoteUrl ?? "");
         setFollowed(!!p.followed);
+        setCommented(!!p.commented);
         setStep(typeof p.step === "number" ? p.step : 0);
       }
       if (localStorage.getItem(SUBMITTED_KEY) === "true") setAlreadySubmitted(true);
@@ -65,13 +87,14 @@ export default function WhitelistApplication({ open, onClose, communityName }: W
 
   /* ── Persist draft ── */
   useEffect(() => {
-    if (ready) localStorage.setItem(DRAFT_KEY, JSON.stringify({ twitter, wallet, quoteUrl, followed, step }));
-  }, [twitter, wallet, quoteUrl, followed, step, ready]);
+    if (ready) localStorage.setItem(DRAFT_KEY, JSON.stringify({ twitter, wallet, quoteUrl, followed, commented, step }));
+  }, [twitter, wallet, quoteUrl, followed, commented, step, ready]);
 
   const valid = [
     twitter.trim().length > 1,
     followed,
     isValidXUrl(quoteUrl),
+    commented,
     isValidEvm(wallet),
   ];
   const allDone = valid.every(Boolean);
@@ -117,6 +140,7 @@ export default function WhitelistApplication({ open, onClose, communityName }: W
   if (!open) return null;
 
   const stepValid = valid[step];
+  const handle = extractXHandle(X_URL) || "swoldiers_";
 
   return (
     <div onClick={e=>{ if (e.target===e.currentTarget) handleClose(); }} style={{
@@ -171,7 +195,7 @@ export default function WhitelistApplication({ open, onClose, communityName }: W
                     transition:"background 0.3s ease",
                   }} />
                   <p style={{
-                    margin:"6px 0 0", fontFamily:mono, fontSize:"0.52rem", letterSpacing:"0.06em", textTransform:"uppercase",
+                    margin:"6px 0 0", fontFamily:mono, fontSize:"0.5rem", letterSpacing:"0.04em", textTransform:"uppercase",
                     color: i === step ? "#fff" : "rgba(255,255,255,0.3)", textAlign:"center",
                   }}>{s.label}</p>
                 </div>
@@ -204,39 +228,39 @@ export default function WhitelistApplication({ open, onClose, communityName }: W
                 <div>
                   <p style={{ fontFamily:mono, fontSize:"0.6rem", letterSpacing:"0.1em", textTransform:"uppercase", color:`${colors.orange}aa`, margin:"0 0 8px" }}>Step 02 — fall in</p>
                   <p style={{ fontFamily:sans, fontSize:"0.85rem", color:colors.textDim, margin:"0 0 16px", lineHeight:1.6 }}>
-                    Follow <b style={{ color:"#fff" }}>@swoldiers_</b>, then like the pinned post and tag 2 friends in the comments.
+                    Follow <b style={{ color:"#fff" }}>@{handle}</b> on X.
                   </p>
                   <div style={{ display:"flex", gap:"8px" }}>
-                    <a href={X_URL} target="_blank" rel="noopener noreferrer" onClick={()=>window.open(PINNED_TWEET_URL,"_blank")} style={{
+                    <button onClick={()=>{ openIntentPopup(followIntentUrl(handle)); setOpenedFollow(true); }} style={{
                       flex:1, textAlign:"center", fontFamily:mono, fontSize:"0.66rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase",
-                      color:"#fff", background:"rgba(255,255,255,0.06)", border:`1px solid ${colors.border}`, borderRadius:"3px", padding:"11px",
-                    }}>Open X</a>
-                    <button onClick={()=>{ setFollowed(true); }} disabled={followed} style={{
-                      flex:1, fontFamily:mono, fontSize:"0.66rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase",
-                      color: followed ? colors.orange : "#050504", background: followed ? "transparent" : colors.orange,
-                      border:`1px solid ${colors.orange}`, borderRadius:"3px", padding:"11px", cursor: followed?"default":"pointer",
-                    }}>{followed ? "Confirmed" : "I've Done This"}</button>
+                      color:"#fff", background:"rgba(255,255,255,0.06)", border:`1px solid ${colors.border}`, borderRadius:"3px", padding:"11px", cursor:"pointer",
+                    }}>Follow on X</button>
+                    <button
+                      onClick={()=>setFollowed(true)}
+                      disabled={followed || !openedFollow}
+                      title={!openedFollow ? "Follow on X first" : undefined}
+                      style={{
+                        flex:1, fontFamily:mono, fontSize:"0.66rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase",
+                        color: followed ? colors.orange : !openedFollow ? "rgba(255,255,255,0.25)" : "#050504",
+                        background: followed ? "transparent" : !openedFollow ? "rgba(255,255,255,0.04)" : colors.orange,
+                        border:`1px solid ${followed ? colors.orange : !openedFollow ? "rgba(255,255,255,0.08)" : colors.orange}`,
+                        borderRadius:"3px", padding:"11px", cursor: followed || !openedFollow ? "not-allowed" : "pointer", transition:"all 0.2s",
+                      }}>{followed ? "Confirmed" : "I've Done This"}</button>
                   </div>
+                  {!openedFollow && <p style={{ fontFamily:sans, fontSize:"0.6rem", color:"rgba(255,255,255,0.28)", margin:"8px 0 0" }}>Follow on X first to unlock confirmation.</p>}
                 </div>
               )}
 
               {step === 2 && (
                 <div>
-                  <p style={{ fontFamily:mono, fontSize:"0.6rem", letterSpacing:"0.1em", textTransform:"uppercase", color:`${colors.orange}aa`, margin:"0 0 8px" }}>Step 03 — spread the word</p>
+                  <p style={{ fontFamily:mono, fontSize:"0.6rem", letterSpacing:"0.1em", textTransform:"uppercase", color:`${colors.orange}aa`, margin:"0 0 8px" }}>Step 03 — quote the post</p>
                   <p style={{ fontFamily:sans, fontSize:"0.85rem", color:colors.textDim, margin:"0 0 14px", lineHeight:1.55 }}>
-                    Quote the pinned post with "SWOLDIERS" and tag 2 friends. Then comment on the same
-                    post and tag 2 Swoldiers. Paste your quote link below.
+                    Quote the pinned post with "SWOLDIERS" and tag 2 friends. Paste your quote link below.
                   </p>
-                  <div style={{ display:"flex", gap:"8px", marginBottom:"12px" }}>
-                    <a href={PINNED_TWEET_URL} target="_blank" rel="noopener noreferrer" style={{
-                      flex:1, textAlign:"center", fontFamily:mono, fontSize:"0.62rem", fontWeight:700, letterSpacing:"0.06em", textTransform:"uppercase",
-                      color:"#fff", background:"rgba(255,255,255,0.06)", border:`1px solid ${colors.border}`, borderRadius:"3px", padding:"11px 6px",
-                    }}>Open Post to Quote</a>
-                    <a href={PINNED_TWEET_URL} target="_blank" rel="noopener noreferrer" style={{
-                      flex:1, textAlign:"center", fontFamily:mono, fontSize:"0.62rem", fontWeight:700, letterSpacing:"0.06em", textTransform:"uppercase",
-                      color:"#fff", background:"rgba(255,255,255,0.06)", border:`1px solid ${colors.border}`, borderRadius:"3px", padding:"11px 6px",
-                    }}>Comment & Tag 2</a>
-                  </div>
+                  <button onClick={()=>{ openIntentPopup(quoteIntentUrl(PINNED_TWEET_URL, "SWOLDIERS")); setOpenedQuote(true); }} style={{
+                    width:"100%", textAlign:"center", fontFamily:mono, fontSize:"0.62rem", fontWeight:700, letterSpacing:"0.06em", textTransform:"uppercase",
+                    color:"#fff", background:"rgba(255,255,255,0.06)", border:`1px solid ${colors.border}`, borderRadius:"3px", padding:"11px", cursor:"pointer", marginBottom:"12px",
+                  }}>Open Post to Quote</button>
                   <input
                     type="url"
                     placeholder="https://x.com/yourhandle/status/..."
@@ -249,12 +273,40 @@ export default function WhitelistApplication({ open, onClose, communityName }: W
                     autoFocus
                   />
                   {quoteUrl && !isValidXUrl(quoteUrl) && <p style={{ fontFamily:sans, fontSize:"0.6rem", color:colors.danger, margin:"6px 0 0" }}>Needs a valid https://x.com/.../status/... link</p>}
+                  {!openedQuote && !quoteUrl && <p style={{ fontFamily:sans, fontSize:"0.6rem", color:"rgba(255,255,255,0.28)", margin:"8px 0 0" }}>Open the post above, quote it, then paste your link here.</p>}
                 </div>
               )}
 
               {step === 3 && (
                 <div>
-                  <p style={{ fontFamily:mono, fontSize:"0.6rem", letterSpacing:"0.1em", textTransform:"uppercase", color:`${colors.orange}aa`, margin:"0 0 8px" }}>Step 04 — claim your wallet</p>
+                  <p style={{ fontFamily:mono, fontSize:"0.6rem", letterSpacing:"0.1em", textTransform:"uppercase", color:`${colors.orange}aa`, margin:"0 0 8px" }}>Step 04 — comment & tag</p>
+                  <p style={{ fontFamily:sans, fontSize:"0.85rem", color:colors.textDim, margin:"0 0 16px", lineHeight:1.6 }}>
+                    Comment on the pinned post and tag 2 Swoldiers.
+                  </p>
+                  <div style={{ display:"flex", gap:"8px" }}>
+                    <button onClick={()=>{ openIntentPopup(replyIntentUrl(PINNED_TWEET_URL)); setOpenedComment(true); }} style={{
+                      flex:1, textAlign:"center", fontFamily:mono, fontSize:"0.66rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase",
+                      color:"#fff", background:"rgba(255,255,255,0.06)", border:`1px solid ${colors.border}`, borderRadius:"3px", padding:"11px", cursor:"pointer",
+                    }}>Comment & Tag 2</button>
+                    <button
+                      onClick={()=>setCommented(true)}
+                      disabled={commented || !openedComment}
+                      title={!openedComment ? "Open the comment popup first" : undefined}
+                      style={{
+                        flex:1, fontFamily:mono, fontSize:"0.66rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase",
+                        color: commented ? colors.orange : !openedComment ? "rgba(255,255,255,0.25)" : "#050504",
+                        background: commented ? "transparent" : !openedComment ? "rgba(255,255,255,0.04)" : colors.orange,
+                        border:`1px solid ${commented ? colors.orange : !openedComment ? "rgba(255,255,255,0.08)" : colors.orange}`,
+                        borderRadius:"3px", padding:"11px", cursor: commented || !openedComment ? "not-allowed" : "pointer", transition:"all 0.2s",
+                      }}>{commented ? "Confirmed" : "I've Done This"}</button>
+                  </div>
+                  {!openedComment && <p style={{ fontFamily:sans, fontSize:"0.6rem", color:"rgba(255,255,255,0.28)", margin:"8px 0 0" }}>Open the comment popup first to unlock confirmation.</p>}
+                </div>
+              )}
+
+              {step === 4 && (
+                <div>
+                  <p style={{ fontFamily:mono, fontSize:"0.6rem", letterSpacing:"0.1em", textTransform:"uppercase", color:`${colors.orange}aa`, margin:"0 0 8px" }}>Step 05 — claim your wallet</p>
                   <p style={{ fontFamily:sans, fontSize:"0.85rem", color:colors.textDim, margin:"0 0 14px", lineHeight:1.55 }}>
                     This is the wallet that will be added to the allowlist.
                   </p>
