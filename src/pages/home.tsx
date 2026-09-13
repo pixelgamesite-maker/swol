@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { FONT_LINK, display, mono, sans, colors } from "../lib/theme";
-import { GALLERY, TRAITS, SYSTEMS, ROADMAP, FAQS, X_URL, GAME_URL } from "../lib/content";
+import { GALLERY, TRAITS, SYSTEMS, ROADMAP, FAQS, X_URL } from "../lib/content";
 import { Label, Divider, RevealSection, Particles, FaqItem, SwoldierReel } from "../components/ui";
 import WhitelistApplication from "../components/WhitelistApplication";
 
@@ -54,14 +54,6 @@ export default function Home() {
               onMouseLeave={e=>{(e.currentTarget as HTMLAnchorElement).style.color="rgba(255,255,255,0.48)";(e.currentTarget as HTMLAnchorElement).style.background="transparent";}}
             >{l}</a>
           ))}
-          <a href={GAME_URL} target="_blank" rel="noopener noreferrer" style={{
-            fontFamily:mono, fontSize:"0.64rem", fontWeight:700, letterSpacing:"0.14em",
-            textTransform:"uppercase", color:colors.orange, border:`1px solid ${colors.orange}55`,
-            padding:"8px 14px", borderRadius:"4px", transition:"all 0.2s",
-          }}
-            onMouseEnter={e=>{(e.currentTarget as HTMLAnchorElement).style.background=`${colors.orange}18`;}}
-            onMouseLeave={e=>{(e.currentTarget as HTMLAnchorElement).style.background="transparent";}}
-          >Play</a>
           <div style={{ width:"1px", height:"16px", background:"rgba(255,255,255,0.1)", margin:"0 8px" }} />
           <a href={X_URL} target="_blank" rel="noopener noreferrer" title="Follow on X"
             style={{ display:"flex", alignItems:"center", justifyContent:"center", width:"34px", height:"34px", borderRadius:"4px", color:"rgba(255,255,255,0.48)", border:"1px solid rgba(255,255,255,0.1)", transition:"all 0.2s", flexShrink:0 }}
@@ -107,28 +99,18 @@ export default function Home() {
 
           <div style={{ display:"flex", flexDirection:"column", gap:"10px", width:"100%", maxWidth:"300px",
             animation: ready?"fadeUp 0.7s ease 0.28s both":"none", opacity: ready?undefined:0 }}>
-            <a href={GAME_URL} target="_blank" rel="noopener noreferrer" style={{
+            <button onClick={()=>setModalOpen(true)} style={{
               fontFamily:mono, fontSize:"0.72rem", fontWeight:700, letterSpacing:"0.16em", textTransform:"uppercase",
               color:"#050504", background:colors.orange, border:"none", borderRadius:"4px",
               padding:"17px 36px", cursor:"pointer", transition:"all 0.2s ease",
               boxShadow:`0 10px 36px ${colors.orange}36`, animation:"pulseGlow 2.5s ease-in-out infinite",
-              position:"relative", overflow:"hidden", display:"block", textAlign:"center",
+              position:"relative", overflow:"hidden", display:"block", textAlign:"center", width:"100%",
             }}
-              onMouseEnter={e=>{(e.currentTarget as HTMLAnchorElement).style.background=colors.orangeLight;(e.currentTarget as HTMLAnchorElement).style.transform="translateY(-2px)";}}
-              onMouseLeave={e=>{(e.currentTarget as HTMLAnchorElement).style.background=colors.orange;(e.currentTarget as HTMLAnchorElement).style.transform="";}}
+              onMouseEnter={e=>{(e.currentTarget as HTMLButtonElement).style.background=colors.orangeLight;(e.currentTarget as HTMLButtonElement).style.transform="translateY(-2px)";}}
+              onMouseLeave={e=>{(e.currentTarget as HTMLButtonElement).style.background=colors.orange;(e.currentTarget as HTMLButtonElement).style.transform="";}}
             >
-              <span style={{ position:"relative", zIndex:2 }}>PLAY THE GAME</span>
+              <span style={{ position:"relative", zIndex:2 }}>CLAIM GUARANTEED SPOT</span>
               <span style={{ position:"absolute", inset:0, background:`linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.25) 50%, transparent 100%)`, backgroundSize:"200% 100%", animation:"shimmer 3s ease-in-out infinite", zIndex:1 }} />
-            </a>
-            <button onClick={()=>setModalOpen(true)} style={{
-              fontFamily:mono, fontSize:"0.72rem", fontWeight:600, letterSpacing:"0.16em", textTransform:"uppercase",
-              color:"rgba(255,255,255,0.62)", background:"transparent",
-              border:`1px solid ${colors.border}`, borderRadius:"4px",
-              padding:"17px 36px", display:"block", textAlign:"center", transition:"all 0.2s ease", cursor:"pointer",
-            }}
-              onMouseEnter={e=>{(e.currentTarget as HTMLButtonElement).style.borderColor=`${colors.orange}44`;(e.currentTarget as HTMLButtonElement).style.color="#fff";}}
-              onMouseLeave={e=>{(e.currentTarget as HTMLButtonElement).style.borderColor=colors.border;(e.currentTarget as HTMLButtonElement).style.color="rgba(255,255,255,0.62)";}}>
-              CLAIM GUARANTEED SPOT
             </button>
           </div>
 
@@ -200,17 +182,17 @@ export default function Home() {
             </div>
           ))}
         </div>
-        <a href={GAME_URL} target="_blank" rel="noopener noreferrer" style={{
+        <button onClick={()=>setModalOpen(true)} style={{
           width:"100%", fontFamily:mono, fontSize:"0.75rem", fontWeight:700, letterSpacing:"0.14em", textTransform:"uppercase",
           color:"#050504", background:colors.orange, border:`1px solid ${colors.orange}`,
           borderRadius:"4px", padding:"16px", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:"10px",
-          textDecoration:"none", transition:"all 0.2s ease", boxShadow:`0 8px 32px ${colors.orange}33`,
+          transition:"all 0.2s ease", boxShadow:`0 8px 32px ${colors.orange}33`,
         }}
-          onMouseEnter={e=>{(e.currentTarget as HTMLAnchorElement).style.background=colors.orangeLight;}}
-          onMouseLeave={e=>{(e.currentTarget as HTMLAnchorElement).style.background=colors.orange;}}
+          onMouseEnter={e=>{(e.currentTarget as HTMLButtonElement).style.background=colors.orangeLight;}}
+          onMouseLeave={e=>{(e.currentTarget as HTMLButtonElement).style.background=colors.orange;}}
         >
-          Enter The Battlefield
-        </a>
+          Claim Guaranteed Spot
+        </button>
       </RevealSection>
 
       <Divider />
@@ -287,7 +269,7 @@ export default function Home() {
           4,444 Swoldiers on Robinhood. Powered by $SWOL.
         </p>
         <div style={{ display:"flex", gap:"24px", justifyContent:"center", marginBottom:"36px" }}>
-          {[["Play",GAME_URL],["X",X_URL],["Mint","#mint"]].map(([l,h])=>(
+          {[["X",X_URL],["Mint","#mint"]].map(([l,h])=>(
             <a key={l} href={h} target={h.startsWith("http")?"_blank":undefined} rel="noopener noreferrer" style={{ fontFamily:mono, fontSize:"0.66rem", letterSpacing:"0.1em", textTransform:"uppercase", color:`${colors.orange}bb`, transition:"color 0.2s" }}
               onMouseEnter={e=>(e.currentTarget.style.color="#fff")} onMouseLeave={e=>(e.currentTarget.style.color=`${colors.orange}bb`)}>
               {l}
