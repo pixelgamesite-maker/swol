@@ -3,9 +3,9 @@
    monospace HUD labels, signal-orange used sparingly as the single alert accent. */
 
 export const FONT_LINK =
-  "https://fonts.googleapis.com/css2?family=Black+Ops+One&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap";
+  "https://fonts.googleapis.com/css2?family=Press+Start+2P&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap";
 
-export const display = "'Black Ops One', 'Arial Narrow', sans-serif"; // headlines
+export const display = "'Press Start 2P', 'JetBrains Mono', monospace"; // pixel headlines
 export const mono = "'JetBrains Mono', 'Courier New', monospace";      // HUD labels, stats, data
 export const sans = "'Inter', 'Segoe UI', Arial, sans-serif";          // body copy
 
