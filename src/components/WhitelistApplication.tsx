@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { supabase } from "../lib/supabase";
+import { supabase } from "../lib/supabaseClient";
 import { colors, display, mono, sans } from "../lib/theme";
-import { X_URL, PINNED_TWEET_URL, isValidEvm, isValidUrl } from "../lib/content";
+import { X_URL, PINNED_TWEET_URL, isValidEvm, isValidXUrl } from "../lib/content";
 
 /* ── localStorage keys (namespaced so this component can be dropped anywhere) ── */
 const DRAFT_KEY = "swol_wl_draft";
@@ -71,7 +71,7 @@ export default function WhitelistApplication({ open, onClose, communityName }: W
   const valid = [
     twitter.trim().length > 1,
     followed,
-    isValidUrl(quoteUrl),
+    isValidXUrl(quoteUrl),
     isValidEvm(wallet),
   ];
   const allDone = valid.every(Boolean);
@@ -224,8 +224,19 @@ export default function WhitelistApplication({ open, onClose, communityName }: W
                 <div>
                   <p style={{ fontFamily:mono, fontSize:"0.6rem", letterSpacing:"0.1em", textTransform:"uppercase", color:`${colors.orange}aa`, margin:"0 0 8px" }}>Step 03 — spread the word</p>
                   <p style={{ fontFamily:sans, fontSize:"0.85rem", color:colors.textDim, margin:"0 0 14px", lineHeight:1.55 }}>
-                    Quote the pinned post with "SWOLDIERS" and tag 2 friends. Paste your quote link below.
+                    Quote the pinned post with "SWOLDIERS" and tag 2 friends. Then comment on the same
+                    post and tag 2 Swoldiers. Paste your quote link below.
                   </p>
+                  <div style={{ display:"flex", gap:"8px", marginBottom:"12px" }}>
+                    <a href={PINNED_TWEET_URL} target="_blank" rel="noopener noreferrer" style={{
+                      flex:1, textAlign:"center", fontFamily:mono, fontSize:"0.62rem", fontWeight:700, letterSpacing:"0.06em", textTransform:"uppercase",
+                      color:"#fff", background:"rgba(255,255,255,0.06)", border:`1px solid ${colors.border}`, borderRadius:"3px", padding:"11px 6px",
+                    }}>Open Post to Quote</a>
+                    <a href={PINNED_TWEET_URL} target="_blank" rel="noopener noreferrer" style={{
+                      flex:1, textAlign:"center", fontFamily:mono, fontSize:"0.62rem", fontWeight:700, letterSpacing:"0.06em", textTransform:"uppercase",
+                      color:"#fff", background:"rgba(255,255,255,0.06)", border:`1px solid ${colors.border}`, borderRadius:"3px", padding:"11px 6px",
+                    }}>Comment & Tag 2</a>
+                  </div>
                   <input
                     type="url"
                     placeholder="https://x.com/yourhandle/status/..."
@@ -237,7 +248,7 @@ export default function WhitelistApplication({ open, onClose, communityName }: W
                     onBlur={blurInp}
                     autoFocus
                   />
-                  {quoteUrl && !isValidUrl(quoteUrl) && <p style={{ fontFamily:sans, fontSize:"0.6rem", color:colors.danger, margin:"6px 0 0" }}>Needs a valid http:// or https:// link</p>}
+                  {quoteUrl && !isValidXUrl(quoteUrl) && <p style={{ fontFamily:sans, fontSize:"0.6rem", color:colors.danger, margin:"6px 0 0" }}>Needs a valid https://x.com/.../status/... link</p>}
                 </div>
               )}
 
