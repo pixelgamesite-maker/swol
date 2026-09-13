@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { FONT_LINK, display, mono, sans, colors } from "../lib/theme";
-import { GALLERY, CLASSES, TRAITS, SYSTEMS, ROADMAP, FAQS, X_URL, GAME_URL } from "../lib/content";
-import { Label, Divider, RevealSection, Particles, FaqItem, SwoldierGallery } from "../components/ui";
+import { GALLERY, TRAITS, SYSTEMS, ROADMAP, FAQS, X_URL, GAME_URL } from "../lib/content";
+import { Label, Divider, RevealSection, Particles, FaqItem, SwoldierReel } from "../components/ui";
 import WhitelistApplication from "../components/WhitelistApplication";
 
 export default function Home() {
@@ -39,12 +39,12 @@ export default function Home() {
         borderBottom:`1px solid ${colors.border}`,
       }}>
         <a href="#home" style={{ display:"flex", alignItems:"center", gap:"10px", textDecoration:"none" }}>
-          <img src="/swoldiers-logo.jpg" style={{ width:"30px", height:"30px", borderRadius:"4px", objectFit:"cover", imageRendering:"pixelated" }} alt="" />
+          <img src="/mini-logo.jpg" style={{ width:"30px", height:"30px", borderRadius:"4px", objectFit:"cover", imageRendering:"pixelated" }} alt="" />
           <span style={{ fontFamily:display, fontSize:"1rem", color:"#fff", letterSpacing:"0.06em" }}>SWOLDIERS</span>
         </a>
 
         <nav style={{ display:"flex", alignItems:"center", gap:"4px" }}>
-          {([["Ranks","#ranks"],["Mint","#mint"]] as [string,string][]).map(([l,h])=>(
+          {([["Mint","#mint"]] as [string,string][]).map(([l,h])=>(
             <a key={l} href={h} style={{
               fontFamily:mono, fontSize:"0.64rem", fontWeight:500, letterSpacing:"0.14em",
               textTransform:"uppercase", color:"rgba(255,255,255,0.48)",
@@ -88,8 +88,8 @@ export default function Home() {
           </div>
 
           <h1 style={{
-            fontFamily:display, fontSize:"clamp(3rem,15vw,6.5rem)",
-            color:"#fff", margin:"0 0 4px", letterSpacing:"0.02em", lineHeight:0.95,
+            fontFamily:display, fontSize:"clamp(1.7rem,9vw,3.4rem)",
+            color:"#fff", margin:"0 0 4px", letterSpacing:"0.02em", lineHeight:1.3,
             animation: ready?"fadeUp 0.7s ease 0.12s both":"none", opacity: ready?undefined:0,
           }}>
             SWOLDIERS
@@ -157,19 +157,19 @@ export default function Home() {
 
       <RevealSection>
         <Label text="the collection" />
-        <h2 style={{ fontFamily:display, fontSize:"clamp(1.8rem,6vw,2.8rem)", color:"#fff", margin:"0 0 16px", letterSpacing:"0.01em" }}>Meet The Swoldiers</h2>
+        <h2 style={{ fontFamily:display, fontSize:"clamp(1.05rem,4.2vw,1.7rem)", color:"#fff", margin:"0 0 16px", letterSpacing:"0.01em" }}>Meet The Swoldiers</h2>
         <p style={{ fontFamily:sans, fontSize:"0.95rem", color:colors.textDim, margin:"0 0 40px", lineHeight:1.7 }}>
           A 4,444 supply pixel-art collection built around a military universe — recruits, commanders,
           cyber units, infected soldiers, tactical operatives, and other battle-ready characters.
         </p>
-        <SwoldierGallery images={GALLERY} />
+        <SwoldierReel videos={GALLERY} />
       </RevealSection>
 
       <Divider />
 
       <RevealSection bg={colors.panelAlt}>
         <Label text="the loadout" />
-        <h2 style={{ fontFamily:display, fontSize:"clamp(1.8rem,6vw,2.8rem)", color:"#fff", margin:"0 0 16px" }}>Built Different</h2>
+        <h2 style={{ fontFamily:display, fontSize:"clamp(1.05rem,4.2vw,1.7rem)", color:"#fff", margin:"0 0 16px" }}>Built Different</h2>
         <p style={{ fontFamily:sans, fontSize:"0.95rem", color:colors.textDim, margin:"0 0 32px", lineHeight:1.7 }}>
           Every Swoldier is assembled from a mix of gear, camo, and rank — some common, some rare enough to spot from across the map.
         </p>
@@ -186,61 +186,9 @@ export default function Home() {
       <Divider />
 
       <RevealSection>
-        <div id="ranks" />
-        <Label text="the ranks" />
-        <h2 style={{ fontFamily:display, fontSize:"clamp(1.8rem,6vw,2.8rem)", color:"#fff", margin:"0 0 32px" }}>Every Swoldier Has A Class</h2>
-        <div style={{ display:"flex", flexDirection:"column", gap:"0" }}>
-          {CLASSES.map((c,i)=>(
-            <div key={c.name} style={{ padding:"20px 0", borderBottom:`1px solid ${colors.border}`, display:"flex", justifyContent:"space-between", alignItems:"center", gap:"16px" }}>
-              <div style={{ flex:1 }}>
-                <p style={{ margin:0, fontFamily:display, fontSize:"1rem", color:"#fff" }}>{c.name}</p>
-                <p style={{ margin:"4px 0 0", fontFamily:sans, fontSize:"0.88rem", color:colors.textDim, lineHeight:1.5 }}>{c.desc}</p>
-              </div>
-              <div style={{ position:"relative", flexShrink:0 }}>
-                <div style={{ width:"72px", height:"72px", borderRadius:"4px", overflow:"hidden", border:`1px solid ${colors.border}`, background:colors.panel, imageRendering:"pixelated" }}>
-                  <img src={c.img} alt={c.name} style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
-                </div>
-              </div>
-              <span style={{ fontFamily:mono, fontSize:"0.58rem", letterSpacing:"0.12em", color:`${colors.orange}88`, flexShrink:0, paddingTop:"4px" }}>
-                {String(i+1).padStart(2,"0")}
-              </span>
-            </div>
-          ))}
-        </div>
-      </RevealSection>
-
-      <Divider />
-
-      <section style={{ background:`linear-gradient(180deg,${colors.bg} 0%,${colors.oliveDark} 50%,${colors.bg} 100%)`, padding:"100px 0" }}>
-        <div style={{ maxWidth:"680px", margin:"0 auto", padding:"0 24px", textAlign:"center" }}>
-          <Label text="access" />
-          <h2 style={{ fontFamily:display, fontSize:"clamp(1.8rem,6vw,2.8rem)", color:"#fff", margin:"0 0 20px" }}>Earn Your Place</h2>
-          <p style={{ fontFamily:sans, fontSize:"0.95rem", color:colors.textDim, margin:"0 0 16px", lineHeight:1.8, maxWidth:"480px", marginLeft:"auto", marginRight:"auto" }}>
-            No forms-only, no pure giveaways. Sign in with X, drop into the game, and earn points
-            through gameplay and missions. Climb the leaderboard to qualify for guaranteed and
-            allowlist spots based on performance.
-          </p>
-          <div style={{ display:"flex", gap:"10px", justifyContent:"center", flexWrap:"wrap", marginTop:"24px" }}>
-            <a href={GAME_URL} target="_blank" rel="noopener noreferrer" style={{
-              fontFamily:mono, fontSize:"0.72rem", fontWeight:700, letterSpacing:"0.14em", textTransform:"uppercase",
-              color:"#050504", background:colors.orange, border:"none", borderRadius:"4px",
-              padding:"15px 32px", cursor:"pointer", boxShadow:`0 8px 32px ${colors.orange}33`,
-            }}>PLAY NOW</a>
-            <button onClick={()=>setModalOpen(true)} style={{
-              fontFamily:mono, fontSize:"0.72rem", fontWeight:700, letterSpacing:"0.14em", textTransform:"uppercase",
-              color:"#fff", background:"transparent", border:`1px solid ${colors.border}`, borderRadius:"4px",
-              padding:"15px 32px", cursor:"pointer",
-            }}>CLAIM GUARANTEED SPOT</button>
-          </div>
-        </div>
-      </section>
-
-      <Divider />
-
-      <RevealSection>
         <div id="mint" />
         <Label text="the mint" />
-        <h2 style={{ fontFamily:display, fontSize:"clamp(1.8rem,6vw,2.8rem)", color:"#fff", margin:"0 0 16px" }}>4,444 Swoldiers. One Mint.</h2>
+        <h2 style={{ fontFamily:display, fontSize:"clamp(1.05rem,4.2vw,1.7rem)", color:"#fff", margin:"0 0 16px" }}>4,444 Swoldiers. One Mint.</h2>
         <p style={{ fontFamily:sans, fontSize:"0.95rem", color:colors.textDim, margin:"0 0 32px", lineHeight:1.7 }}>
           Allowlist spots are earned through gameplay, missions, and partner collabs like this one.
         </p>
@@ -269,7 +217,7 @@ export default function Home() {
 
       <RevealSection bg={colors.panelAlt}>
         <Label text="token" />
-        <h2 style={{ fontFamily:display, fontSize:"clamp(2rem,8vw,4rem)", color:"#fff", margin:"0 0 16px", letterSpacing:"0.02em" }}>$SWOL</h2>
+        <h2 style={{ fontFamily:display, fontSize:"clamp(1.4rem,6vw,2.3rem)", color:"#fff", margin:"0 0 16px", letterSpacing:"0.02em" }}>$SWOL</h2>
         <p style={{ fontFamily:sans, fontSize:"0.95rem", color:colors.textDim, lineHeight:1.8 }}>
           $SWOL is the post-mint token connected to the game. Players will be able to earn $SWOL
           through gameplay, including token drops that occasionally appear during play — tracked in
@@ -281,7 +229,7 @@ export default function Home() {
 
       <RevealSection>
         <Label text="systems" />
-        <h2 style={{ fontFamily:display, fontSize:"clamp(1.8rem,6vw,2.8rem)", color:"#fff", margin:"0 0 32px" }}>The Systems</h2>
+        <h2 style={{ fontFamily:display, fontSize:"clamp(1.05rem,4.2vw,1.7rem)", color:"#fff", margin:"0 0 32px" }}>The Systems</h2>
         <div style={{ display:"flex", flexDirection:"column", gap:"0" }}>
           {SYSTEMS.map((s,i)=>(
             <div key={s.name} style={{ padding:"22px 0", borderBottom:`1px solid ${colors.border}`, display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:"16px" }}>
@@ -301,7 +249,7 @@ export default function Home() {
 
       <RevealSection bg={colors.panelAlt}>
         <Label text="the plan" />
-        <h2 style={{ fontFamily:display, fontSize:"clamp(1.8rem,6vw,2.8rem)", color:"#fff", margin:"0 0 36px" }}>What Comes Next</h2>
+        <h2 style={{ fontFamily:display, fontSize:"clamp(1.05rem,4.2vw,1.7rem)", color:"#fff", margin:"0 0 36px" }}>What Comes Next</h2>
         <div style={{ position:"relative" }}>
           <div style={{ position:"absolute", left:"16px", top:0, bottom:0, width:"1px", background:`linear-gradient(180deg,${colors.orange}44,${colors.orange}11)` }} />
           <div style={{ display:"flex", flexDirection:"column", gap:"0" }}>
@@ -323,7 +271,7 @@ export default function Home() {
 
       <RevealSection>
         <Label text="faq" />
-        <h2 style={{ fontFamily:display, fontSize:"clamp(1.8rem,6vw,2.8rem)", color:"#fff", margin:"0 0 32px" }}>Questions</h2>
+        <h2 style={{ fontFamily:display, fontSize:"clamp(1.05rem,4.2vw,1.7rem)", color:"#fff", margin:"0 0 32px" }}>Questions</h2>
         <div>
           {FAQS.map(f=><FaqItem key={f.q} q={f.q} a={f.a} />)}
         </div>
@@ -332,14 +280,14 @@ export default function Home() {
       <Divider />
 
       <footer style={{ padding:"60px 24px 40px", textAlign:"center" }}>
-        <img src="/swoldiers-logo.jpg" style={{ width:"44px", height:"44px", borderRadius:"6px", objectFit:"cover", marginBottom:"16px", imageRendering:"pixelated" }} alt="" />
+        <img src="/mini-logo.jpg" style={{ width:"44px", height:"44px", borderRadius:"6px", objectFit:"cover", marginBottom:"16px", imageRendering:"pixelated" }} alt="" />
         <h3 style={{ fontFamily:display, fontSize:"1.2rem", color:"#fff", margin:"0 0 6px", letterSpacing:"0.04em" }}>SWOLDIERS</h3>
         <p style={{ fontFamily:sans, fontSize:"0.86rem", color:colors.textFaint, margin:"0 0 24px", lineHeight:1.7 }}>
           Play. Climb the ranks. Earn your place.<br/>
           4,444 Swoldiers on Robinhood. Powered by $SWOL.
         </p>
         <div style={{ display:"flex", gap:"24px", justifyContent:"center", marginBottom:"36px" }}>
-          {[["Play",GAME_URL],["X",X_URL],["Ranks","#ranks"],["Mint","#mint"]].map(([l,h])=>(
+          {[["Play",GAME_URL],["X",X_URL],["Mint","#mint"]].map(([l,h])=>(
             <a key={l} href={h} target={h.startsWith("http")?"_blank":undefined} rel="noopener noreferrer" style={{ fontFamily:mono, fontSize:"0.66rem", letterSpacing:"0.1em", textTransform:"uppercase", color:`${colors.orange}bb`, transition:"color 0.2s" }}
               onMouseEnter={e=>(e.currentTarget.style.color="#fff")} onMouseLeave={e=>(e.currentTarget.style.color=`${colors.orange}bb`)}>
               {l}
