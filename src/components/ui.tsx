@@ -132,30 +132,67 @@ export function FaqItem({ q, a }: { q:string; a:string }) {
   );
 }
 
-/* ── Swoldier gallery — auto-cycling showcase ── */
-export function SwoldierGallery({ images }: { images: string[] }) {
-  const [cur, setCur] = useState(0);
-  const [fading, setFading] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout>>();
+/* ── Swoldier reel — video viewfinder with a filmstrip, not a crossfade carousel ── */
+export function SwoldierReel({ videos }: { videos: string[] }) {
+  const [active, setActive] = useState(0);
 
-  useEffect(() => { timer.current = setTimeout(next, 3200); return () => clearTimeout(timer.current); }, [cur]);
+  function prev() { setActive(a => (a - 1 + videos.length) % videos.length); }
+  function next() { setActive(a => (a + 1) % videos.length); }
 
-  function next() { fade((cur+1) % images.length); }
-  function fade(i: number) {
-    if (i === cur) return;
-    clearTimeout(timer.current);
-    setFading(true);
-    setTimeout(() => { setCur(i); setFading(false); }, 280);
-  }
+  const arrowBtn = (side: "left" | "right"): React.CSSProperties => ({
+    position:"absolute", top:"50%", [side]:"8px", transform:"translateY(-50%)",
+    width:"30px", height:"30px", borderRadius:"3px",
+    background:"rgba(10,11,7,0.55)", border:`1px solid ${colors.border}`,
+    color:"#fff", fontSize:"1.1rem", lineHeight:1, cursor:"pointer",
+    display:"flex", alignItems:"center", justifyContent:"center", zIndex:2,
+  });
 
   return (
-    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"16px" }}>
-      <div style={{ width:"100%", maxWidth:"340px", aspectRatio:"1/1", borderRadius:"4px", overflow:"hidden", border:`1px solid ${colors.border}`, background:colors.panel, imageRendering:"pixelated" }}>
-        <img src={images[cur]} alt="" style={{ width:"100%", height:"100%", objectFit:"cover", display:"block", opacity: fading?0:1, transition:"opacity 0.28s ease" }} />
+    <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
+      <div style={{
+        position:"relative", width:"100%", maxWidth:"460px", margin:"0 auto",
+        aspectRatio:"16/10", borderRadius:"4px", overflow:"hidden",
+        border:`1px solid ${colors.border}`, background:colors.panel,
+      }}>
+        <video
+          key={videos[active]}
+          src={videos[active]}
+          autoPlay muted loop playsInline
+          style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }}
+        />
+        {/* scanline overlay for a HUD/CRT feel */}
+        <div style={{
+          position:"absolute", inset:0, pointerEvents:"none", mixBlendMode:"overlay",
+          background:"repeating-linear-gradient(0deg, rgba(0,0,0,0.35) 0px, rgba(0,0,0,0.35) 1px, transparent 1px, transparent 3px)",
+        }} />
+        <div style={{
+          position:"absolute", top:"8px", left:"10px", display:"flex", alignItems:"center", gap:"6px",
+          fontFamily:mono, fontSize:"0.6rem", letterSpacing:"0.08em", color:colors.orange,
+          textShadow:"0 1px 3px rgba(0,0,0,0.9)",
+        }}>
+          <span style={{ width:"6px", height:"6px", borderRadius:"50%", background:colors.orange, boxShadow:`0 0 6px ${colors.orange}` }} />
+          FEED {String(active + 1).padStart(2,"0")}/{String(videos.length).padStart(2,"0")}
+        </div>
+        <button onClick={prev} aria-label="Previous" style={arrowBtn("left")}>‹</button>
+        <button onClick={next} aria-label="Next" style={arrowBtn("right")}>›</button>
       </div>
-      <div style={{ display:"flex", gap:"6px" }}>
-        {images.map((_,i) => (
-          <button key={i} onClick={()=>fade(i)} style={{ width: i===cur?"20px":"5px", height:"5px", borderRadius:"1px", background: i===cur?colors.orange:"rgba(255,255,255,0.15)", border:"none", padding:0, cursor:"pointer", transition:"all 0.3s ease" }} />
+
+      <div style={{ display:"flex", gap:"6px", justifyContent:"center", flexWrap:"wrap" }}>
+        {videos.map((v, i) => (
+          <button
+            key={v}
+            onClick={() => setActive(i)}
+            aria-label={`Show clip ${i + 1}`}
+            style={{
+              width:"54px", height:"34px", flexShrink:0, padding:0, cursor:"pointer",
+              borderRadius:"3px", overflow:"hidden",
+              border: i === active ? `2px solid ${colors.orange}` : `1px solid ${colors.border}`,
+              opacity: i === active ? 1 : 0.5, transition:"all 0.2s ease",
+              background:colors.panel,
+            }}
+          >
+            <video src={v} muted playsInline preload="metadata" style={{ width:"100%", height:"100%", objectFit:"cover", pointerEvents:"none" }} />
+          </button>
         ))}
       </div>
     </div>
