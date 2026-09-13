@@ -150,8 +150,8 @@ export function SwoldierReel({ videos }: { videos: string[] }) {
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
       <div style={{
-        position:"relative", width:"100%", maxWidth:"460px", margin:"0 auto",
-        aspectRatio:"16/10", borderRadius:"4px", overflow:"hidden",
+        position:"relative", width:"100%", maxWidth:"420px", margin:"0 auto",
+        aspectRatio:"1/1", borderRadius:"4px", overflow:"hidden",
         border:`1px solid ${colors.border}`, background:colors.panel,
       }}>
         <video
@@ -184,7 +184,7 @@ export function SwoldierReel({ videos }: { videos: string[] }) {
             onClick={() => setActive(i)}
             aria-label={`Show clip ${i + 1}`}
             style={{
-              width:"54px", height:"34px", flexShrink:0, padding:0, cursor:"pointer",
+              width:"44px", height:"44px", flexShrink:0, padding:0, cursor:"pointer",
               borderRadius:"3px", overflow:"hidden",
               border: i === active ? `2px solid ${colors.orange}` : `1px solid ${colors.border}`,
               opacity: i === active ? 1 : 0.5, transition:"all 0.2s ease",
