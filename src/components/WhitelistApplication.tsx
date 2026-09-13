@@ -10,71 +10,16 @@ const SUBMITTED_KEY = "swol_wl_submitted";
 const inp: React.CSSProperties = {
   width:"100%", background:"rgba(0,0,0,0.5)",
   border:`1px solid ${colors.border}`, borderRadius:"3px",
-  padding:"9px 11px", fontSize:"0.8rem", color:"#fff",
+  padding:"11px 12px", fontSize:"0.85rem", color:"#fff",
   fontFamily:mono, outline:"none", transition:"border 0.2s", boxSizing:"border-box",
 };
 
-/* ── Flip card used for each mission ── */
-function FlipCard({ index, icon, title, subtitle, done, locked, children, onFlip }: {
-  index:number; icon:string; title:string; subtitle:string;
-  done:boolean; locked:boolean; children?:React.ReactNode; onFlip?:()=>void;
-}) {
-  const [flipped, setFlipped] = useState(false);
-  useEffect(() => { if (done) setFlipped(true); }, [done]);
-
-  function handleClick() {
-    if (locked || flipped) return;
-    setFlipped(true); onFlip?.();
-  }
-
-  const bg = colors.panel;
-  const borderCol = done ? `${colors.orange}55` : locked ? "rgba(255,255,255,0.04)" : colors.border;
-
-  return (
-    <div onClick={handleClick} style={{ perspective:"1000px", cursor: locked?"not-allowed": flipped?"default":"pointer", animation:`cardIn 0.5s ease ${0.08*index}s both` }}>
-      <div style={{ position:"relative", transformStyle:"preserve-3d", transition:"transform 0.6s cubic-bezier(0.23,1,0.32,1)", transform: flipped?"rotateY(180deg)":"rotateY(0)" }}>
-
-        {/* FRONT */}
-        <div style={{
-          backfaceVisibility:"hidden", WebkitBackfaceVisibility:"hidden",
-          position: flipped?"absolute":"relative", inset:0,
-          background:bg, border:`1px solid ${borderCol}`, borderRadius:"6px",
-          padding:"18px 14px", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
-          gap:"8px", minHeight:"120px", opacity: locked?0.4:1,
-          boxShadow: locked?"none":`0 0 20px ${colors.orange}0f`,
-        }}>
-          <span style={{ fontSize:"1.4rem" }}>{locked ? "—" : icon}</span>
-          <p style={{ margin:0, fontFamily:display, fontSize:"0.82rem", color: locked?"rgba(255,255,255,0.2)":"#fff", textAlign:"center", letterSpacing:"0.02em" }}>{title}</p>
-          {!locked && <p style={{ margin:0, fontFamily:mono, fontSize:"0.6rem", color:"rgba(255,255,255,0.3)", letterSpacing:"0.08em", textTransform:"uppercase" }}>Tap to open</p>}
-        </div>
-
-        {/* BACK */}
-        <div style={{
-          backfaceVisibility:"hidden", WebkitBackfaceVisibility:"hidden",
-          transform:"rotateY(180deg)",
-          position: flipped?"relative":"absolute", inset:0,
-          background: done ? colors.oliveDark : bg,
-          border:`1px solid ${done?`${colors.orange}55`:colors.border}`, borderRadius:"6px",
-          padding:"14px 12px", minHeight:"120px",
-          boxShadow: done?`0 0 20px ${colors.orange}18`:"none",
-        }}>
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:"10px" }}>
-            <div>
-              <p style={{ margin:0, fontFamily:display, fontSize:"0.78rem", color:"#fff" }}>{title}</p>
-              <p style={{ margin:"1px 0 0", fontFamily:mono, fontSize:"0.58rem", color:"rgba(255,255,255,0.3)", letterSpacing:"0.06em", textTransform:"uppercase" }}>{subtitle}</p>
-            </div>
-            {done && (
-              <div style={{ width:"18px", height:"18px", borderRadius:"3px", background:colors.orange, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                <svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.2 5.8L8 1" stroke="#0a0c08" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              </div>
-            )}
-          </div>
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-}
+const STEPS = [
+  { key: "handle", label: "Identify" },
+  { key: "follow", label: "Follow" },
+  { key: "quote",  label: "Quote" },
+  { key: "wallet", label: "Wallet" },
+] as const;
 
 export interface WhitelistApplicationProps {
   open: boolean;
@@ -84,24 +29,22 @@ export interface WhitelistApplicationProps {
 }
 
 /**
- * Self-contained guaranteed-spot / allowlist application flow.
+ * Self-contained guaranteed-spot / allowlist application flow, presented as a
+ * one-step-at-a-time briefing rather than a card grid.
  * Owns its own state and Supabase submission — drop it anywhere and
  * control visibility with `open` / `onClose`.
  */
 export default function WhitelistApplication({ open, onClose, communityName }: WhitelistApplicationProps) {
+  const [step,      setStep]      = useState(0);
   const [twitter,   setTwitter]   = useState("");
   const [wallet,    setWallet]    = useState("");
   const [quoteUrl,  setQuoteUrl]  = useState("");
-  const [tasks,     setTasks]     = useState<Record<string,boolean>>({});
+  const [followed,  setFollowed]  = useState(false);
   const [sending,   setSending]   = useState(false);
   const [success,   setSuccess]   = useState(false);
   const [err,       setErr]       = useState("");
   const [ready,     setReady]     = useState(false);
   const [alreadySubmitted, setAlreadySubmitted] = useState(false);
-
-  const [twitterConfirmed, setTwitterConfirmed] = useState(false);
-  const [quoteConfirmed, setQuoteConfirmed] = useState(false);
-  const [walletConfirmed, setWalletConfirmed] = useState(false);
 
   /* ── Load draft from localStorage on mount ── */
   useEffect(() => {
@@ -109,10 +52,11 @@ export default function WhitelistApplication({ open, onClose, communityName }: W
       const s = localStorage.getItem(DRAFT_KEY);
       if (s) {
         const p = JSON.parse(s);
-        setTasks(p.tasks ?? {});
-        setWallet(p.wallet ?? "");
         setTwitter(p.twitter ?? "");
+        setWallet(p.wallet ?? "");
         setQuoteUrl(p.quoteUrl ?? "");
+        setFollowed(!!p.followed);
+        setStep(typeof p.step === "number" ? p.step : 0);
       }
       if (localStorage.getItem(SUBMITTED_KEY) === "true") setAlreadySubmitted(true);
     } catch {}
@@ -121,17 +65,22 @@ export default function WhitelistApplication({ open, onClose, communityName }: W
 
   /* ── Persist draft ── */
   useEffect(() => {
-    if (ready) localStorage.setItem(DRAFT_KEY, JSON.stringify({ tasks, wallet, twitter, quoteUrl }));
-  }, [tasks, wallet, twitter, quoteUrl, ready]);
+    if (ready) localStorage.setItem(DRAFT_KEY, JSON.stringify({ twitter, wallet, quoteUrl, followed, step }));
+  }, [twitter, wallet, quoteUrl, followed, step, ready]);
 
-  const c1 = twitterConfirmed && twitter.trim().length > 1;
-  const c2 = !!tasks["like"];
-  const c3 = quoteConfirmed && isValidUrl(quoteUrl);
-  const c4 = walletConfirmed && isValidEvm(wallet);
-  const allDone = c1 && c2 && c3 && c4;
+  const valid = [
+    twitter.trim().length > 1,
+    followed,
+    isValidUrl(quoteUrl),
+    isValidEvm(wallet),
+  ];
+  const allDone = valid.every(Boolean);
+
+  function goNext() { setStep(s => Math.min(s + 1, STEPS.length - 1)); }
+  function goBack() { setStep(s => Math.max(s - 1, 0)); }
 
   async function submit() {
-    if (!allDone) { setErr("Complete all missions first."); return; }
+    if (!allDone) { setErr("Complete every step first."); return; }
     if (alreadySubmitted) { setErr("You have already submitted an application."); return; }
 
     setErr("");
@@ -167,6 +116,8 @@ export default function WhitelistApplication({ open, onClose, communityName }: W
 
   if (!open) return null;
 
+  const stepValid = valid[step];
+
   return (
     <div onClick={e=>{ if (e.target===e.currentTarget) handleClose(); }} style={{
       position:"fixed", inset:0, zIndex:200,
@@ -174,209 +125,203 @@ export default function WhitelistApplication({ open, onClose, communityName }: W
       display:"flex", alignItems:"center", justifyContent:"center", padding:"16px",
     }}>
       <style>{`
-        @keyframes cardIn { from{opacity:0;transform:translateY(14px) scale(0.97)} to{opacity:1;transform:translateY(0) scale(1)} }
         @keyframes modalIn { from{opacity:0;transform:scale(0.96) translateY(12px)} to{opacity:1;transform:scale(1) translateY(0)} }
+        @keyframes stepIn { from{opacity:0;transform:translateX(10px)} to{opacity:1;transform:translateX(0)} }
         @keyframes stamp { 0%{transform:scale(0) rotate(-15deg);opacity:0} 70%{transform:scale(1.12) rotate(3deg)} 100%{transform:scale(1) rotate(0);opacity:1} }
       `}</style>
       <div style={{
-        width:"100%", maxWidth:"460px", maxHeight:"94vh", overflowY:"auto",
-        background:colors.panel, border:`1px solid ${colors.border}`, borderRadius:"10px",
-        padding:"28px 22px 24px", animation:"modalIn 0.3s ease both", position:"relative",
+        width:"100%", maxWidth:"440px", maxHeight:"94vh", overflowY:"auto",
+        background:colors.panel, border:`1px solid ${colors.border}`, borderRadius:"6px",
+        padding:"24px 22px", animation:"modalIn 0.3s ease both", position:"relative",
         boxShadow:`0 40px 80px rgba(0,0,0,0.9), 0 0 60px ${colors.orange}08`,
         fontFamily: sans,
       }}>
         <button onClick={handleClose} style={{ position:"absolute", top:"14px", right:"16px", background:"none", border:"none", cursor:"pointer", color:"rgba(255,255,255,0.22)", fontSize:"1.1rem", lineHeight:1 }}>✕</button>
 
         {alreadySubmitted ? (
-          <div style={{ textAlign:"center", padding:"36px 0" }}>
-            <div style={{ width:"54px", height:"54px", borderRadius:"6px", background:`${colors.orange}33`, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 18px" }}>
-              <svg width="22" height="18" viewBox="0 0 22 18" fill="none"><path d="M2 9L8 15L20 2" stroke={colors.orange} strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            </div>
-            <p style={{ fontFamily:mono, fontSize:"0.6rem", letterSpacing:"0.2em", textTransform:"uppercase", color:colors.orange, margin:"0 0 6px" }}>Already Applied</p>
-            <h2 style={{ fontFamily:display, fontSize:"1.35rem", color:"#fff", margin:"0 0 10px" }}>Application Received.</h2>
-            <p style={{ fontFamily:sans, fontSize:"0.9rem", color:colors.textDim, margin:0, lineHeight:1.6 }}>
-              Your spot has been logged. Selected accounts will be added to the allowlist before mint.
-            </p>
-            <button onClick={handleClose} style={{ marginTop:"24px", fontFamily:mono, fontSize:"0.68rem", fontWeight:700, letterSpacing:"0.14em", textTransform:"uppercase", color:"#050504", background:colors.orange, border:"none", borderRadius:"4px", padding:"12px 28px", cursor:"pointer" }}>
-              BACK TO BASE
-            </button>
-          </div>
+          <StatusScreen
+            tone="neutral"
+            eyebrow="Already Applied"
+            title="Application received."
+            body="Your spot has been logged. Selected accounts will be added to the allowlist before mint."
+            onClose={handleClose}
+          />
         ) : success ? (
-          <div style={{ textAlign:"center", padding:"36px 0" }}>
-            <div style={{ width:"54px", height:"54px", borderRadius:"6px", background:colors.orange, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 18px", animation:"stamp 0.5s cubic-bezier(0.23,1,0.32,1) both", boxShadow:`0 8px 24px ${colors.orange}44` }}>
-              <svg width="22" height="18" viewBox="0 0 22 18" fill="none"><path d="M2 9L8 15L20 2" stroke="#0a0800" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            </div>
-            <p style={{ fontFamily:mono, fontSize:"0.6rem", letterSpacing:"0.2em", textTransform:"uppercase", color:colors.orange, margin:"0 0 6px" }}>Application Sent</p>
-            <h2 style={{ fontFamily:display, fontSize:"1.35rem", color:"#fff", margin:"0 0 10px" }}>You Are Under Review.</h2>
-            <p style={{ fontFamily:sans, fontSize:"0.9rem", color:colors.textDim, margin:0, lineHeight:1.6 }}>
-              Selected accounts will be added to the allowlist before mint.
-            </p>
-            <button onClick={handleClose} style={{ marginTop:"24px", fontFamily:mono, fontSize:"0.68rem", fontWeight:700, letterSpacing:"0.14em", textTransform:"uppercase", color:"#050504", background:colors.orange, border:"none", borderRadius:"4px", padding:"12px 28px", cursor:"pointer" }}>
-              BACK TO BASE
-            </button>
-          </div>
+          <StatusScreen
+            tone="success"
+            eyebrow="Application Sent"
+            title="You are under review."
+            body="Selected accounts will be added to the allowlist before mint."
+            onClose={handleClose}
+          />
         ) : (
           <>
-            <div style={{ marginBottom:"22px" }}>
-              <p style={{ fontFamily:mono, fontSize:"0.58rem", letterSpacing:"0.2em", textTransform:"uppercase", color:colors.orange, margin:"0 0 4px" }}>
-                {communityName ? `${communityName} × Swoldiers` : "Guaranteed Spot Application"}
-              </p>
-              <h2 style={{ fontFamily:display, fontSize:"1.4rem", color:"#fff", margin:"0 0 4px", letterSpacing:"0.01em" }}>Claim Your Spot</h2>
-              <p style={{ fontFamily:sans, fontSize:"0.84rem", color:colors.textDim, margin:"0 0 14px", lineHeight:1.5 }}>
-                Complete the missions below and submit your wallet for allowlist review.
-              </p>
-              <div style={{ height:"2px", background:`${colors.orange}18`, borderRadius:"2px", overflow:"hidden" }}>
-                <div style={{ height:"100%", borderRadius:"2px", background:`linear-gradient(90deg,${colors.orange},${colors.orangeLight})`, width:`${([c1,c2,c3,c4].filter(Boolean).length/4)*100}%`, transition:"width 0.4s ease" }} />
-              </div>
-              <p style={{ fontFamily:mono, fontSize:"0.62rem", color:`${colors.orange}aa`, margin:"6px 0 0", letterSpacing:"0.06em" }}>
-                {[c1,c2,c3,c4].filter(Boolean).length} / 4 MISSIONS COMPLETE
-              </p>
+            {/* ── Header + step tracker ── */}
+            <p style={{ fontFamily:mono, fontSize:"0.56rem", letterSpacing:"0.16em", textTransform:"uppercase", color:colors.orange, margin:"0 0 4px" }}>
+              {communityName ? `${communityName} × Swoldiers` : "Guaranteed Spot Application"}
+            </p>
+            <h2 style={{ fontFamily:display, fontSize:"1rem", color:"#fff", margin:"0 0 16px", lineHeight:1.5 }}>Mission Briefing</h2>
+
+            <div style={{ display:"flex", gap:"6px", marginBottom:"22px" }}>
+              {STEPS.map((s, i) => (
+                <div key={s.key} style={{ flex:1 }}>
+                  <div style={{
+                    height:"4px", borderRadius:"2px",
+                    background: i < step || valid[i] ? colors.orange : i === step ? `${colors.orange}55` : "rgba(255,255,255,0.08)",
+                    transition:"background 0.3s ease",
+                  }} />
+                  <p style={{
+                    margin:"6px 0 0", fontFamily:mono, fontSize:"0.52rem", letterSpacing:"0.06em", textTransform:"uppercase",
+                    color: i === step ? "#fff" : "rgba(255,255,255,0.3)", textAlign:"center",
+                  }}>{s.label}</p>
+                </div>
+              ))}
             </div>
 
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"8px", marginBottom:"16px" }}>
+            {/* ── Step body ── */}
+            <div key={step} style={{ animation:"stepIn 0.25s ease both", minHeight:"170px" }}>
+              {step === 0 && (
+                <div>
+                  <p style={{ fontFamily:mono, fontSize:"0.6rem", letterSpacing:"0.1em", textTransform:"uppercase", color:`${colors.orange}aa`, margin:"0 0 8px" }}>Step 01 — who are you?</p>
+                  <p style={{ fontFamily:sans, fontSize:"0.85rem", color:colors.textDim, margin:"0 0 14px", lineHeight:1.55 }}>
+                    Enter the X handle you'll use for this application.
+                  </p>
+                  <input
+                    type="text"
+                    placeholder="@yourhandle"
+                    value={twitter}
+                    onChange={e=>setTwitter(e.target.value)}
+                    onKeyDown={e=>{ if(e.key==="Enter" && stepValid) goNext(); }}
+                    style={inp}
+                    onFocus={focusInp}
+                    onBlur={blurInp}
+                    autoFocus
+                  />
+                </div>
+              )}
 
-              {/* Mission 1 — X Handle */}
-              <FlipCard index={0} icon="𝕏" title="Who Are You?" subtitle="Mission 01 / 04" done={c1} locked={false}>
-                <p style={{ margin:"0 0 7px", fontFamily:mono, fontSize:"0.6rem", color:`${colors.orange}aa`, letterSpacing:"0.08em", textTransform:"uppercase" }}>Your X handle</p>
-                <input
-                  type="text"
-                  placeholder="@yourhandle"
-                  value={twitter}
-                  onChange={e=>setTwitter(e.target.value)}
-                  onKeyDown={e=>{ if(e.key==="Enter") setTwitterConfirmed(true); }}
-                  onClick={e=>e.stopPropagation()}
-                  style={inp}
-                  onFocus={focusInp}
-                  onBlur={blurInp}
-                />
-                {!c1 && twitter.trim().length > 1 && (
-                  <button
-                    onClick={e=>{ e.stopPropagation(); setTwitterConfirmed(true); }}
-                    style={{
-                      marginTop:"8px", width:"100%", background:`${colors.orange}22`, color:colors.orange,
-                      border:`1px solid ${colors.orange}44`, borderRadius:"3px", padding:"6px",
-                      fontFamily:mono, fontSize:"0.6rem", fontWeight:700, letterSpacing:"0.08em",
-                      textTransform:"uppercase", cursor:"pointer", transition:"all 0.2s",
-                    }}
-                    onMouseEnter={e=>{ (e.currentTarget as HTMLButtonElement).style.background=colors.orange; (e.currentTarget as HTMLButtonElement).style.color="#050504"; }}
-                    onMouseLeave={e=>{ (e.currentTarget as HTMLButtonElement).style.background=`${colors.orange}22`; (e.currentTarget as HTMLButtonElement).style.color=colors.orange; }}
-                  >
-                    Confirm
-                  </button>
-                )}
-                {c1 && <p style={{ fontFamily:mono, fontSize:"0.6rem", color:colors.orange, margin:"5px 0 0" }}>Identity confirmed</p>}
-              </FlipCard>
+              {step === 1 && (
+                <div>
+                  <p style={{ fontFamily:mono, fontSize:"0.6rem", letterSpacing:"0.1em", textTransform:"uppercase", color:`${colors.orange}aa`, margin:"0 0 8px" }}>Step 02 — fall in</p>
+                  <p style={{ fontFamily:sans, fontSize:"0.85rem", color:colors.textDim, margin:"0 0 16px", lineHeight:1.6 }}>
+                    Follow <b style={{ color:"#fff" }}>@swoldiers_</b>, then like the pinned post and tag 2 friends in the comments.
+                  </p>
+                  <div style={{ display:"flex", gap:"8px" }}>
+                    <a href={X_URL} target="_blank" rel="noopener noreferrer" onClick={()=>window.open(PINNED_TWEET_URL,"_blank")} style={{
+                      flex:1, textAlign:"center", fontFamily:mono, fontSize:"0.66rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase",
+                      color:"#fff", background:"rgba(255,255,255,0.06)", border:`1px solid ${colors.border}`, borderRadius:"3px", padding:"11px",
+                    }}>Open X</a>
+                    <button onClick={()=>{ setFollowed(true); }} disabled={followed} style={{
+                      flex:1, fontFamily:mono, fontSize:"0.66rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase",
+                      color: followed ? colors.orange : "#050504", background: followed ? "transparent" : colors.orange,
+                      border:`1px solid ${colors.orange}`, borderRadius:"3px", padding:"11px", cursor: followed?"default":"pointer",
+                    }}>{followed ? "Confirmed" : "I've Done This"}</button>
+                  </div>
+                </div>
+              )}
 
-              {/* Mission 2 — Follow + like/tag 2 */}
-              <FlipCard index={1} icon="↺" title="Follow & Tag 2 Frens" subtitle="Mission 02 / 04" done={c2} locked={!c1}
-                onFlip={()=>{ window.open(PINNED_TWEET_URL,"_blank"); setTimeout(()=>setTasks(p=>({...p,like:true})),800); }}>
-                <p style={{ fontFamily:sans, fontSize:"0.78rem", color:"rgba(255,255,255,0.5)", margin:0, lineHeight:1.5 }}>
-                  {c2 ? "Follow & tag confirmed." : `Follow @swoldiers_, like the pinned post, and tag 2 friends in the comments.`}
-                </p>
-                {c2 && <p style={{ fontFamily:mono, fontSize:"0.6rem", color:colors.orange, margin:"8px 0 0" }}>Mission complete</p>}
-              </FlipCard>
+              {step === 2 && (
+                <div>
+                  <p style={{ fontFamily:mono, fontSize:"0.6rem", letterSpacing:"0.1em", textTransform:"uppercase", color:`${colors.orange}aa`, margin:"0 0 8px" }}>Step 03 — spread the word</p>
+                  <p style={{ fontFamily:sans, fontSize:"0.85rem", color:colors.textDim, margin:"0 0 14px", lineHeight:1.55 }}>
+                    Quote the pinned post with "SWOLDIERS" and tag 2 friends. Paste your quote link below.
+                  </p>
+                  <input
+                    type="url"
+                    placeholder="https://x.com/yourhandle/status/..."
+                    value={quoteUrl}
+                    onChange={e=>setQuoteUrl(e.target.value)}
+                    onKeyDown={e=>{ if(e.key==="Enter" && stepValid) goNext(); }}
+                    style={inp}
+                    onFocus={focusInp}
+                    onBlur={blurInp}
+                    autoFocus
+                  />
+                  {quoteUrl && !isValidUrl(quoteUrl) && <p style={{ fontFamily:sans, fontSize:"0.6rem", color:colors.danger, margin:"6px 0 0" }}>Needs a valid http:// or https:// link</p>}
+                </div>
+              )}
 
-              {/* Mission 3 — Quote the pinned post */}
-              <FlipCard index={2} icon="↗" title="Quote Pinned Post" subtitle="Mission 03 / 04" done={c3} locked={!c2}
-                onFlip={()=>{ window.open(PINNED_TWEET_URL,"_blank"); }}>
-                {!c3 ? (
-                  <>
-                    <p style={{ fontFamily:sans, fontSize:"0.78rem", color:"rgba(255,255,255,0.5)", margin:0, lineHeight:1.5 }}>
-                      Quote the pinned post with "SWOLDIERS" and tag 2 friends. Then paste your quote link below.
-                    </p>
-                    <p style={{ margin:"8px 0 0", fontFamily:mono, fontSize:"0.6rem", color:`${colors.orange}aa`, letterSpacing:"0.08em", textTransform:"uppercase" }}>Quote link</p>
-                    <input
-                      type="url"
-                      placeholder="https://x.com/yourhandle/status/..."
-                      value={quoteUrl}
-                      onChange={e=>setQuoteUrl(e.target.value)}
-                      onKeyDown={e=>{ if(e.key==="Enter" && isValidUrl(quoteUrl)) setQuoteConfirmed(true); }}
-                      onClick={e=>e.stopPropagation()}
-                      style={inp}
-                      onFocus={focusInp}
-                      onBlur={blurInp}
-                    />
-                    {quoteUrl && !isValidUrl(quoteUrl) && <p style={{ fontFamily:sans, fontSize:"0.6rem", color:colors.danger, margin:"4px 0 0" }}>Needs a valid http:// or https:// link</p>}
-                    {isValidUrl(quoteUrl) && (
-                      <button
-                        onClick={e=>{ e.stopPropagation(); setQuoteConfirmed(true); }}
-                        style={{
-                          marginTop:"8px", width:"100%", background:`${colors.orange}22`, color:colors.orange,
-                          border:`1px solid ${colors.orange}44`, borderRadius:"3px", padding:"6px",
-                          fontFamily:mono, fontSize:"0.6rem", fontWeight:700, letterSpacing:"0.08em",
-                          textTransform:"uppercase", cursor:"pointer", transition:"all 0.2s",
-                        }}
-                        onMouseEnter={e=>{ (e.currentTarget as HTMLButtonElement).style.background=colors.orange; (e.currentTarget as HTMLButtonElement).style.color="#050504"; }}
-                        onMouseLeave={e=>{ (e.currentTarget as HTMLButtonElement).style.background=`${colors.orange}22`; (e.currentTarget as HTMLButtonElement).style.color=colors.orange; }}
-                      >
-                        Verify Link
-                      </button>
-                    )}
-                  </>
-                ) : (
-                  <p style={{ fontFamily:mono, fontSize:"0.6rem", color:colors.orange, margin:0 }}>Quote verified</p>
-                )}
-              </FlipCard>
-
-              {/* Mission 4 — Wallet */}
-              <FlipCard index={3} icon="◈" title="Claim Wallet" subtitle="Mission 04 / 04" done={c4} locked={!c3}>
-                <p style={{ margin:"0 0 7px", fontFamily:mono, fontSize:"0.6rem", color:`${colors.orange}aa`, letterSpacing:"0.08em", textTransform:"uppercase" }}>EVM address</p>
-                <input
-                  type="text"
-                  placeholder="0x..."
-                  value={wallet}
-                  onChange={e=>setWallet(e.target.value)}
-                  onKeyDown={e=>{ if(e.key==="Enter" && isValidEvm(wallet)) setWalletConfirmed(true); }}
-                  onClick={e=>e.stopPropagation()}
-                  style={inp}
-                  onFocus={focusInp}
-                  onBlur={blurInp}
-                />
-                {wallet && !isValidEvm(wallet) && <p style={{ fontFamily:sans, fontSize:"0.6rem", color:colors.danger, margin:"4px 0 0" }}>Invalid address</p>}
-                {!c4 && isValidEvm(wallet) && (
-                  <button
-                    onClick={e=>{ e.stopPropagation(); setWalletConfirmed(true); }}
-                    style={{
-                      marginTop:"8px", width:"100%", background:`${colors.orange}22`, color:colors.orange,
-                      border:`1px solid ${colors.orange}44`, borderRadius:"3px", padding:"6px",
-                      fontFamily:mono, fontSize:"0.6rem", fontWeight:700, letterSpacing:"0.08em",
-                      textTransform:"uppercase", cursor:"pointer", transition:"all 0.2s",
-                    }}
-                    onMouseEnter={e=>{ (e.currentTarget as HTMLButtonElement).style.background=colors.orange; (e.currentTarget as HTMLButtonElement).style.color="#050504"; }}
-                    onMouseLeave={e=>{ (e.currentTarget as HTMLButtonElement).style.background=`${colors.orange}22`; (e.currentTarget as HTMLButtonElement).style.color=colors.orange; }}
-                  >
-                    Confirm Wallet
-                  </button>
-                )}
-                {c4 && <p style={{ fontFamily:mono, fontSize:"0.6rem", color:colors.orange, margin:"4px 0 0" }}>Wallet confirmed</p>}
-                <p style={{ fontFamily:sans, fontSize:"0.58rem", color:"rgba(255,255,255,0.2)", margin:"6px 0 0", lineHeight:1.4 }}>Never share private keys or seed phrases.</p>
-              </FlipCard>
-
+              {step === 3 && (
+                <div>
+                  <p style={{ fontFamily:mono, fontSize:"0.6rem", letterSpacing:"0.1em", textTransform:"uppercase", color:`${colors.orange}aa`, margin:"0 0 8px" }}>Step 04 — claim your wallet</p>
+                  <p style={{ fontFamily:sans, fontSize:"0.85rem", color:colors.textDim, margin:"0 0 14px", lineHeight:1.55 }}>
+                    This is the wallet that will be added to the allowlist.
+                  </p>
+                  <input
+                    type="text"
+                    placeholder="0x..."
+                    value={wallet}
+                    onChange={e=>setWallet(e.target.value)}
+                    onKeyDown={e=>{ if(e.key==="Enter" && stepValid) submit(); }}
+                    style={inp}
+                    onFocus={focusInp}
+                    onBlur={blurInp}
+                    autoFocus
+                  />
+                  {wallet && !isValidEvm(wallet) && <p style={{ fontFamily:sans, fontSize:"0.6rem", color:colors.danger, margin:"6px 0 0" }}>Invalid address</p>}
+                  <p style={{ fontFamily:sans, fontSize:"0.58rem", color:"rgba(255,255,255,0.2)", margin:"8px 0 0", lineHeight:1.4 }}>Never share private keys or seed phrases.</p>
+                </div>
+              )}
             </div>
 
-            {err && <p style={{ fontFamily:sans, fontSize:"0.78rem", color:colors.danger, margin:"0 0 10px", fontWeight:500 }}>{err}</p>}
+            {err && <p style={{ fontFamily:sans, fontSize:"0.78rem", color:colors.danger, margin:"14px 0 0", fontWeight:500 }}>{err}</p>}
 
-            <button onClick={submit} disabled={sending || !allDone} style={{
-              width:"100%",
-              background: allDone ? colors.orange : "rgba(255,255,255,0.04)",
-              color: allDone ? "#050504" : "rgba(255,255,255,0.18)",
-              border: `1px solid ${allDone ? colors.orange : "rgba(255,255,255,0.06)"}`,
-              borderRadius:"4px", padding:"15px",
-              fontFamily:mono, fontSize:"0.72rem", fontWeight:700, letterSpacing:"0.14em", textTransform:"uppercase",
-              cursor: allDone && !sending ? "pointer" : "not-allowed",
-              transition:"all 0.3s ease",
-              boxShadow: allDone ? `0 8px 24px ${colors.orange}33` : "none",
-            }}
-              onMouseEnter={e=>{ if(allDone)(e.currentTarget as HTMLButtonElement).style.background=colors.orangeLight; }}
-              onMouseLeave={e=>{ if(allDone)(e.currentTarget as HTMLButtonElement).style.background=colors.orange; }}
-              onMouseDown={e=>allDone && ((e.currentTarget as HTMLButtonElement).style.transform="scale(0.98)")}
-              onMouseUp={e=>((e.currentTarget as HTMLButtonElement).style.transform="")}
-            >
-              {sending ? "Saving..." : allDone ? "SUBMIT APPLICATION" : "Complete all missions to unlock"}
-            </button>
+            {/* ── Footer nav ── */}
+            <div style={{ display:"flex", gap:"8px", marginTop:"20px" }}>
+              {step > 0 && (
+                <button onClick={goBack} style={{
+                  fontFamily:mono, fontSize:"0.68rem", fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase",
+                  color:"rgba(255,255,255,0.6)", background:"transparent", border:`1px solid ${colors.border}`,
+                  borderRadius:"4px", padding:"13px 18px", cursor:"pointer",
+                }}>Back</button>
+              )}
+              {step < STEPS.length - 1 ? (
+                <button onClick={goNext} disabled={!stepValid} style={{
+                  flex:1, fontFamily:mono, fontSize:"0.72rem", fontWeight:700, letterSpacing:"0.12em", textTransform:"uppercase",
+                  color: stepValid ? "#050504" : "rgba(255,255,255,0.18)",
+                  background: stepValid ? colors.orange : "rgba(255,255,255,0.04)",
+                  border:`1px solid ${stepValid ? colors.orange : "rgba(255,255,255,0.06)"}`,
+                  borderRadius:"4px", padding:"13px", cursor: stepValid ? "pointer" : "not-allowed", transition:"all 0.2s",
+                }}>Continue</button>
+              ) : (
+                <button onClick={submit} disabled={sending || !allDone} style={{
+                  flex:1, fontFamily:mono, fontSize:"0.72rem", fontWeight:700, letterSpacing:"0.12em", textTransform:"uppercase",
+                  color: allDone ? "#050504" : "rgba(255,255,255,0.18)",
+                  background: allDone ? colors.orange : "rgba(255,255,255,0.04)",
+                  border:`1px solid ${allDone ? colors.orange : "rgba(255,255,255,0.06)"}`,
+                  borderRadius:"4px", padding:"13px", cursor: allDone && !sending ? "pointer" : "not-allowed",
+                  boxShadow: allDone ? `0 8px 24px ${colors.orange}33` : "none", transition:"all 0.2s",
+                }}>{sending ? "Saving..." : "Submit Application"}</button>
+              )}
+            </div>
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+function StatusScreen({ tone, eyebrow, title, body, onClose }: {
+  tone: "success" | "neutral"; eyebrow: string; title: string; body: string; onClose: () => void;
+}) {
+  const badgeBg = tone === "success" ? colors.orange : `${colors.orange}33`;
+  const iconStroke = tone === "success" ? "#0a0800" : colors.orange;
+  return (
+    <div style={{ textAlign:"center", padding:"32px 0" }}>
+      <div style={{
+        width:"52px", height:"52px", borderRadius:"6px", background:badgeBg,
+        display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 18px",
+        animation: tone === "success" ? "stamp 0.5s cubic-bezier(0.23,1,0.32,1) both" : "none",
+        boxShadow: tone === "success" ? `0 8px 24px ${colors.orange}44` : "none",
+      }}>
+        <svg width="22" height="18" viewBox="0 0 22 18" fill="none"><path d="M2 9L8 15L20 2" stroke={iconStroke} strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+      </div>
+      <p style={{ fontFamily:mono, fontSize:"0.58rem", letterSpacing:"0.18em", textTransform:"uppercase", color:colors.orange, margin:"0 0 8px" }}>{eyebrow}</p>
+      <h2 style={{ fontFamily:display, fontSize:"1rem", color:"#fff", margin:"0 0 12px", lineHeight:1.6 }}>{title}</h2>
+      <p style={{ fontFamily:sans, fontSize:"0.88rem", color:colors.textDim, margin:0, lineHeight:1.6 }}>{body}</p>
+      <button onClick={onClose} style={{ marginTop:"22px", fontFamily:mono, fontSize:"0.64rem", fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", color:"#050504", background:colors.orange, border:"none", borderRadius:"4px", padding:"12px 26px", cursor:"pointer" }}>
+        Back to Base
+      </button>
     </div>
   );
 }
