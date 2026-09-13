@@ -108,7 +108,7 @@ export default function Home() {
               margin:"0 0 26px", lineHeight:1.8, letterSpacing:"0.01em",
             }}>
               Play. Climb the ranks. Earn your place.<br/>
-              4,444 pixel-art Swoldiers battling for allowlist spots on Robinhood.
+              4,444 pixel-art Swoldiers coming to Robinhood.
             </p>
 
             <button onClick={()=>setModalOpen(true)} style={{
@@ -152,7 +152,7 @@ export default function Home() {
         <Label text="the collection" />
         <h2 style={{ fontFamily:display, fontSize:"clamp(1.05rem,4.2vw,1.7rem)", color:"#fff", margin:"0 0 16px", letterSpacing:"0.01em" }}>Meet The Swoldiers</h2>
         <p style={{ fontFamily:sans, fontSize:"0.95rem", color:colors.textDim, margin:"0 0 40px", lineHeight:1.7 }}>
-          A 4,444 supply pixel-art collection built around a military universe — recruits, commanders,
+          A 4,444 supply pixel-art collection built around a military universe, recruits, commanders,
           cyber units, infected soldiers, tactical operatives, and other battle-ready characters.
         </p>
         <SwoldierReel videos={GALLERY} />
@@ -164,7 +164,7 @@ export default function Home() {
         <Label text="the loadout" />
         <h2 style={{ fontFamily:display, fontSize:"clamp(1.05rem,4.2vw,1.7rem)", color:"#fff", margin:"0 0 16px" }}>Built Different</h2>
         <p style={{ fontFamily:sans, fontSize:"0.95rem", color:colors.textDim, margin:"0 0 32px", lineHeight:1.7 }}>
-          Every Swoldier is assembled from a mix of gear, camo, and rank — some common, some rare enough to spot from across the map.
+          Every Swoldier is assembled from a mix of gear, camo, and rank, some common, some rare enough to spot from across the map.
         </p>
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"8px" }}>
           {TRAITS.map(t=>(
@@ -183,7 +183,7 @@ export default function Home() {
         <Label text="the mint" />
         <h2 style={{ fontFamily:display, fontSize:"clamp(1.05rem,4.2vw,1.7rem)", color:"#fff", margin:"0 0 16px" }}>4,444 Swoldiers. One Mint.</h2>
         <p style={{ fontFamily:sans, fontSize:"0.95rem", color:colors.textDim, margin:"0 0 32px", lineHeight:1.7 }}>
-          Allowlist spots are earned through gameplay, missions, and partner collabs like this one.
+          Allowlist spots are earned through gameplay, missions, and partner collabs.
         </p>
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"1px", border:`1px solid ${colors.border}`, borderRadius:"6px", overflow:"hidden", marginBottom:"28px" }}>
           {[["4,444","Supply"],["TBA","Price"],["Robinhood","Chain"],["Game + AL","Access"]].map(([v,l],i)=>(
@@ -213,8 +213,7 @@ export default function Home() {
         <h2 style={{ fontFamily:display, fontSize:"clamp(1.4rem,6vw,2.3rem)", color:"#fff", margin:"0 0 16px", letterSpacing:"0.02em" }}>$SWOL</h2>
         <p style={{ fontFamily:sans, fontSize:"0.95rem", color:colors.textDim, lineHeight:1.8 }}>
           $SWOL is the post-mint token connected to the game. Players will be able to earn $SWOL
-          through gameplay, including token drops that occasionally appear during play — tracked in
-          a separate token balance on your profile. Full details land after mint.
+          through gameplay, including token drops that occasionally appear during play, Full details land after mint.
         </p>
       </RevealSection>
 
