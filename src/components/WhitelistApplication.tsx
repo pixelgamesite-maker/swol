@@ -3,7 +3,7 @@ import { supabase } from "../lib/supabase";
 import { colors, display, mono, sans } from "../lib/theme";
 import {
   X_URL, PINNED_TWEET_URL, isValidEvm, isValidXUrl,
-  extractXHandle, followIntentUrl, quoteIntentUrl, replyIntentUrl,
+  extractXHandle, followIntentUrl, replyIntentUrl,
 } from "../lib/content";
 
 /* ── localStorage keys (namespaced so this component can be dropped anywhere) ── */
@@ -257,7 +257,7 @@ export default function WhitelistApplication({ open, onClose, communityName }: W
                   <p style={{ fontFamily:sans, fontSize:"0.85rem", color:colors.textDim, margin:"0 0 14px", lineHeight:1.55 }}>
                     Quote the pinned post with "SWOLDIERS" and tag 2 friends. Paste your quote link below.
                   </p>
-                  <button onClick={()=>{ openIntentPopup(quoteIntentUrl(PINNED_TWEET_URL, "SWOLDIERS")); setOpenedQuote(true); }} style={{
+                  <button onClick={()=>{ openIntentPopup(PINNED_TWEET_URL); setOpenedQuote(true); }} style={{
                     width:"100%", textAlign:"center", fontFamily:mono, fontSize:"0.62rem", fontWeight:700, letterSpacing:"0.06em", textTransform:"uppercase",
                     color:"#fff", background:"rgba(255,255,255,0.06)", border:`1px solid ${colors.border}`, borderRadius:"3px", padding:"11px", cursor:"pointer", marginBottom:"12px",
                   }}>Open Post to Quote</button>
