@@ -49,3 +49,14 @@ export function isValidUrl(u: string) {
     return false;
   }
 }
+
+export function isValidXUrl(u: string) {
+  try {
+    const url = new URL(u.trim());
+    if (url.protocol !== "https:") return false;
+    const host = url.hostname.toLowerCase().replace(/^www\./, "");
+    return (host === "x.com" || host === "twitter.com") && url.pathname.length > 1;
+  } catch {
+    return false;
+  }
+}
