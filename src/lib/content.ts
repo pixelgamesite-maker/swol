@@ -1,18 +1,7 @@
 /* ── Swoldiers content & config ── */
 
 export const GALLERY = [
-  "/Swoldier-1.jpg","/Swoldier-2.jpg","/Swoldier-3.jpg","/Swoldier-4.jpg",
-  "/Swoldier-5.jpg","/Swoldier-6.jpg","/Swoldier-7.jpg","/Swoldier-8.jpg",
-  "/Swoldier-9.jpg","/Swoldier-10.jpg","/Swoldier-11.jpg","/Swoldier-12.jpg",
-  "/Swoldier-13.jpg","/Swoldier-14.jpg","/Swoldier-15.jpg","/Swoldier-16.jpg",
-]; // replace with real pixel-art export paths
-
-export const CLASSES = [
-  { name: "Recruits",           desc: "Fresh to the battlefield. Simple gear, ready to prove themselves.", img: "/Swoldier-Recruit.jpg" },
-  { name: "Commanders",         desc: "Higher rank, sharper gear, real authority in the field.",            img: "/Swoldier-Commander.jpg" },
-  { name: "Cyber Units",        desc: "Augmented soldiers wired straight into the grid.",                   img: "/Swoldier-Cyber.jpg" },
-  { name: "Infected",           desc: "Something went wrong in the lab. Rare, and dangerous.",              img: "/Swoldier-Infected.jpg" },
-  { name: "Tactical Operatives",desc: "Elite specialists built for the hardest missions.",                  img: "/Swoldier-Operative.jpg" },
+  "/1.mp4","/2.mp4","/3.mp4","/4.mp4","/5.mp4","/6.mp4",
 ];
 
 export const TRAITS = [
@@ -42,8 +31,6 @@ export const FAQS = [
   { q: "Where does Swoldiers mint?",         a: "Robinhood." },
   { q: "Do I need to play to mint?",         a: "No, but playing is the main way to earn a guaranteed spot." },
   { q: "What is $SWOL?",                     a: "A post-mint token earned through gameplay, including surprise drops that appear during play." },
-  { q: "When will $SWOL launch?",            a: "After mint." },
-  { q: "Is this financial advice?",          a: "No. Swoldiers is a digital collectible and game. DYOR." },
 ];
 
 export const X_URL = "https://x.com/swoldiers_";
