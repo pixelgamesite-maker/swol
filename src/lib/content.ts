@@ -60,3 +60,33 @@ export function isValidXUrl(u: string) {
     return false;
   }
 }
+
+/* ── X "intent" links — open the native follow/tweet/reply popup on x.com
+   instead of just linking to a profile or post. ── */
+export function extractXHandle(url: string): string {
+  try {
+    const u = new URL(url);
+    return u.pathname.replace(/^\//, "").split("/")[0] ?? "";
+  } catch {
+    return "";
+  }
+}
+
+export function extractTweetId(url: string): string | null {
+  const match = url.match(/status\/(\d+)/);
+  return match ? match[1] : null;
+}
+
+export function followIntentUrl(handle: string) {
+  return `https://twitter.com/intent/follow?screen_name=${encodeURIComponent(handle)}`;
+}
+
+export function quoteIntentUrl(tweetUrl: string, text: string) {
+  return `https://twitter.com/intent/tweet?url=${encodeURIComponent(tweetUrl)}&text=${encodeURIComponent(text)}`;
+}
+
+export function replyIntentUrl(tweetUrl: string) {
+  const id = extractTweetId(tweetUrl);
+  // Falls back to the plain post link until PINNED_TWEET_URL is a real status URL.
+  return id ? `https://twitter.com/intent/tweet?in_reply_to=${id}` : tweetUrl;
+}
