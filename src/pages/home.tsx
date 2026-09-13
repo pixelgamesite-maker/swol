@@ -42,28 +42,6 @@ export default function Home() {
           <img src="/mini-logo.jpg" style={{ width:"30px", height:"30px", borderRadius:"4px", objectFit:"cover", imageRendering:"pixelated" }} alt="" />
           <span style={{ fontFamily:display, fontSize:"1rem", color:"#fff", letterSpacing:"0.06em" }}>SWOLDIERS</span>
         </a>
-
-        <nav style={{ display:"flex", alignItems:"center", gap:"4px" }}>
-          {([["Mint","#mint"]] as [string,string][]).map(([l,h])=>(
-            <a key={l} href={h} style={{
-              fontFamily:mono, fontSize:"0.64rem", fontWeight:500, letterSpacing:"0.14em",
-              textTransform:"uppercase", color:"rgba(255,255,255,0.48)",
-              padding:"8px 14px", borderRadius:"4px", transition:"all 0.2s",
-            }}
-              onMouseEnter={e=>{(e.currentTarget as HTMLAnchorElement).style.color="#fff";(e.currentTarget as HTMLAnchorElement).style.background="rgba(255,255,255,0.06)";}}
-              onMouseLeave={e=>{(e.currentTarget as HTMLAnchorElement).style.color="rgba(255,255,255,0.48)";(e.currentTarget as HTMLAnchorElement).style.background="transparent";}}
-            >{l}</a>
-          ))}
-          <div style={{ width:"1px", height:"16px", background:"rgba(255,255,255,0.1)", margin:"0 8px" }} />
-          <a href={X_URL} target="_blank" rel="noopener noreferrer" title="Follow on X"
-            style={{ display:"flex", alignItems:"center", justifyContent:"center", width:"34px", height:"34px", borderRadius:"4px", color:"rgba(255,255,255,0.48)", border:"1px solid rgba(255,255,255,0.1)", transition:"all 0.2s", flexShrink:0 }}
-            onMouseEnter={e=>{const el=e.currentTarget as HTMLAnchorElement;el.style.color="#fff";el.style.borderColor=`${colors.orange}55`;el.style.background="rgba(255,255,255,0.04)";}}
-            onMouseLeave={e=>{const el=e.currentTarget as HTMLAnchorElement;el.style.color="rgba(255,255,255,0.48)";el.style.borderColor="rgba(255,255,255,0.1)";el.style.background="transparent";}}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.259 5.63L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"/>
-            </svg>
-          </a>
-        </nav>
       </header>
 
       {/* ══════════ HERO ══════════ */}
