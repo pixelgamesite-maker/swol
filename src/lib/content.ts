@@ -35,7 +35,7 @@ export const FAQS = [
 
 export const X_URL = "https://x.com/swoldiers_";
 export const GAME_URL = "https://swoldiers.xyz";
-export const PINNED_TWEET_URL = "https://x.com/swoldiers_/status/2099051202260467745?s=20";
+export const PINNED_TWEET_URL = "https://x.com/swoldiers_/status/2099861756092842138?s=20";
 
 export function isValidEvm(a: string) {
   return /^0x[0-9a-fA-F]{40}$/.test(a.trim());
